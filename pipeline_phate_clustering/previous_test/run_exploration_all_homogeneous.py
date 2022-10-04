@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 import phate
 import matplotlib.pyplot as plt
-from functions.plot import plot_figure_2D, plot_figure_2D_patient, plot_figure_2D_patient_unique, plot_figure_2D_patient_unique_time
+from pipeline_phate_clustering.functions_helper.plot import plot_figure_2D, plot_figure_2D_patient, plot_figure_2D_patient_unique, plot_figure_2D_patient_unique_time
 
 from select_data import get_data_all_patient, select_avalanches, reshape_avalanches
 

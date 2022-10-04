@@ -201,10 +201,28 @@ def plot_figure_2D(data, title, cluster_point):
     fig.colorbar(plot)
     ax_2.set_title('cluster')
 
+def plot_figure_2D_3D(data, title, cluster_point):
+    fig = plt.figure(figsize=(10, 20))
+    plt.title(title)
+    plt.axis('off')
+    ax_1 = fig.add_subplot(131)
+    plot = ax_1.scatter(data[:, 0], data[:, 1], c=cluster_point, s=0.8, cmap='Dark2')
+    ax_1.set_xlabel('PHATE component 1')
+    ax_1.set_ylabel('PHATE component 2')
+    ax_2 = fig.add_subplot(132)
+    plot = ax_2.scatter(data[:, 1], data[:, 2], c=cluster_point, s=0.8, cmap='Dark2')
+    ax_2.set_xlabel('PHATE component 2')
+    ax_2.set_ylabel('PHATE component 3')
+    ax_3 = fig.add_subplot(133)
+    plot = ax_3.scatter(data[:, 0], data[:, 2], c=cluster_point, s=0.8, cmap='Dark2')
+    ax_3.set_xlabel('PHATE component 1')
+    ax_3.set_ylabel('PHATE component 3')
+    fig.colorbar(plot)
+    fig.suptitle('cluster')
 
 def plot_figure_3D(data, title, cluster_point):
     fig = plt.figure(figsize=(9, 5))
-    plt.title(title)
+    plt.suptitle(title)
     plt.axis('off')
     ax_1 = fig.add_subplot(121, projection='3d')
     ax_1.scatter(data[:, 0], data[:, 1], data[:, 2], c=np.arange(data.shape[0]), s=0.8)
@@ -219,7 +237,7 @@ def plot_figure_3D(data, title, cluster_point):
 def plot_figure_2D_patient_unique(data, title, avalanches, figsize=(20, 20)):
     nb_grid = int(np.ceil(np.sqrt(len(avalanches))))
     fig, axs = plt.subplots(nb_grid, nb_grid, figsize=(20, 20))
-    plt.title(title)
+    plt.suptitle(title)
     plt.axis('off')
     begin = 0
     for index, avalanche in enumerate(avalanches):
@@ -232,7 +250,7 @@ def plot_figure_2D_patient_unique(data, title, avalanches, figsize=(20, 20)):
 def plot_figure_2D_patient_unique_time(data, title, avalanches, figsize=(20, 20)):
     nb_grid = int(np.ceil(np.sqrt(len(avalanches))))
     fig, axs = plt.subplots(nb_grid, nb_grid, figsize=(20, 20))
-    plt.title(title)
+    plt.suptitle(title)
     plt.axis('off')
     begin = 0
     for index, avalanche in enumerate(avalanches):

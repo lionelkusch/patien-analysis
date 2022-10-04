@@ -1,44 +1,7 @@
 import os
 import numpy as np
 import h5py
-from functions.load_data import go_avalanches
-
-
-def get_data_selected_patient_1():
-    # DATASET EXTRACTION
-    # remove suject 11,15,20
-    subjects = ['43', '39', '38', '35', '34', '29', '26', '21', '20', '19', '18', '17', '15', '13', '9', '8', '6', '5']
-    Nsubs = 44
-    nregions = 90
-
-    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
-    f = h5py.File(path_data + 'serie_Melbourne.mat', 'r')
-
-    struArray = f['D']
-    data = {}
-    for i in range(Nsubs):
-        data['%d' % i] = np.swapaxes(f[struArray[i, 0]][:nregions, :], 0, 1)
-
-    avalanches_bin = []
-    avalanches_sum = []
-    for subject in subjects:
-        Avalanches_human = go_avalanches(data[subject], thre=3, direc=0, binsize=1)
-        out = [[] for i in range(len(Avalanches_human['ranges']))]
-        out_sum = [[] for i in range(len(Avalanches_human['ranges']))]
-        for kk1 in range(len(Avalanches_human['ranges'])):
-            begin = Avalanches_human['ranges'][kk1][0]
-            end = Avalanches_human['ranges'][kk1][1]
-            sum_kk = np.sum(Avalanches_human['Zbin'][begin:end, :], 0)
-            out_sum[kk1] = sum_kk
-            out[kk1] = np.zeros(nregions)
-            out[kk1][np.where(sum_kk >= 1)] = 1
-
-        avalanches_bin.append(np.concatenate([out], axis=1))
-        avalanches_sum.append(np.concatenate([out_sum], axis=1))
-        out = np.concatenate([out], axis=1)
-        out_sum = np.concatenate([out_sum], axis=1)
-
-    return avalanches_bin, avalanches_sum, out, out_sum
+from pipeline_phate_clustering.functions_helper.load_data import go_avalanches
 
 
 def get_data_all_patient(Nsubs=47, nregions=90, remove_subject=[11, 15, 20]):
