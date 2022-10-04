@@ -3,6 +3,7 @@ from mpl_toolkits import mplot3d
 import numpy as np
 from sklearn.cluster import KMeans
 
+# colors names with remove names for not used color
 cnames = {
     # 'aliceblue': '#F0F8FF',
     # 'antiquewhite': '#FAEBD7',
@@ -147,6 +148,12 @@ cnames = {
 
 
 def plot_figure_3D_Kmeans(data, title):
+    """
+    Apply Kmeans on data and plot the clusters in 3D
+    :param data: data
+    :param title: title of the figure
+    :return:
+    """
     cluster_point = KMeans(n_clusters=5, random_state=123).fit_predict(data)
     fig = plt.figure(figsize=(9, 5))
     plt.title(title)
@@ -157,10 +164,15 @@ def plot_figure_3D_Kmeans(data, title):
     ax_2 = fig.add_subplot(122, projection='3d')
     ax_2.scatter(data[:, 0], data[:, 1], data[:, 2], c=cluster_point, s=0.8)
     ax_2.set_title('cluster')
-    plt.show()
 
 
 def plot_figure_2D_Kmeans(data, title):
+    """
+    Apply Kmeans on data and plot the clusters in 2D
+    :param data: data
+    :param title: title of the figure
+    :return:
+    """
     cluster_point = KMeans(n_clusters=5, random_state=123).fit_predict(data)
     fig = plt.figure(figsize=(9, 5))
     plt.title(title)
@@ -174,6 +186,13 @@ def plot_figure_2D_Kmeans(data, title):
 
 
 def plot_figure_2D_patient(data, title, avalanches):
+    """
+    plot 2D time series with gradient following times
+    :param data: data
+    :param avalanches: avalanches times
+    :param title: title of the figure
+    :return:
+    """
     fig = plt.figure(figsize=(9, 5))
     plt.title(title)
     plt.axis('off')
@@ -190,6 +209,13 @@ def plot_figure_2D_patient(data, title, avalanches):
 
 
 def plot_figure_2D(data, title, cluster_point):
+    """
+    plot 2D time series with gradient color
+    :param data: data
+    :param cluster_point: cluster for each point
+    :param title: title of the figure
+    :return:
+    """
     fig = plt.figure(figsize=(9, 5))
     plt.title(title)
     plt.axis('off')
@@ -202,7 +228,13 @@ def plot_figure_2D(data, title, cluster_point):
     ax_2.set_title('cluster')
 
 def plot_figure_2D_3D(data, title, cluster_point):
-    fig = plt.figure(figsize=(10, 20))
+    """
+    plot 2D and 3D  time series with gradient color
+    :param data: data
+    :param cluster_point: cluster for each point
+    :param title: title of the figure
+    """
+    fig = plt.figure(figsize=(20, 10))
     plt.title(title)
     plt.axis('off')
     ax_1 = fig.add_subplot(131)
@@ -221,6 +253,12 @@ def plot_figure_2D_3D(data, title, cluster_point):
     fig.suptitle('cluster')
 
 def plot_figure_3D(data, title, cluster_point):
+    """
+    plot 2D and 3D  time series with gradient color
+    :param data: data
+    :param cluster_point: cluster for each point
+    :param title: title of the figure
+    """
     fig = plt.figure(figsize=(9, 5))
     plt.suptitle(title)
     plt.axis('off')
@@ -235,6 +273,12 @@ def plot_figure_3D(data, title, cluster_point):
 
 
 def plot_figure_2D_patient_unique(data, title, avalanches, figsize=(20, 20)):
+    """
+    plot where each patient has the different color
+    :param data: data
+    :param avalanches: avalanches times
+    :param title: title of the figure
+    """
     nb_grid = int(np.ceil(np.sqrt(len(avalanches))))
     fig, axs = plt.subplots(nb_grid, nb_grid, figsize=(20, 20))
     plt.suptitle(title)
@@ -248,6 +292,12 @@ def plot_figure_2D_patient_unique(data, title, avalanches, figsize=(20, 20)):
         begin = end
 
 def plot_figure_2D_patient_unique_time(data, title, avalanches, figsize=(20, 20)):
+    """
+    plot where each patient with a gradient for their times
+    :param data: data
+    :param avalanches: avalanches times
+    :param title: title of the figure
+    """
     nb_grid = int(np.ceil(np.sqrt(len(avalanches))))
     fig, axs = plt.subplots(nb_grid, nb_grid, figsize=(20, 20))
     plt.suptitle(title)
