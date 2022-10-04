@@ -1,1 +1,8 @@
 *.pyc
+.idea
+paper
+data
+matlab/library
+matlab/sequence_by_patient.mat
+venv
+projection_data/
