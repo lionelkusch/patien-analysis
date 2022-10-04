@@ -11,10 +11,11 @@ from pipeline_phate_clustering.functions_helper.plot import plot_figure_2D, plot
 
 
 def pipeline(path_saving, patients_data, selected_subjects,
-             avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1,
+             avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1, avalanches_path=None,
              PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
              PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=-1,
-             kmeans_nb_cluster=5, kmeans_seed=123, update=False, save_for_matlab=False, plot=False, plot_save=True):
+             kmeans_nb_cluster=5, kmeans_seed=123, update=False, save_for_matlab=False, plot=False, plot_save=True,
+             ):
     """
     Pipeline for extracting unsupervise clustering from resting state MEG data
     The Pipeline is composed on 3 steps:
@@ -49,6 +50,7 @@ def pipeline(path_saving, patients_data, selected_subjects,
         'avalanches_threshold': avalanches_threshold,
         'avalanches_direction': avalanches_direction,
         'avalanches_binsize': avalanches_binsize,
+        'avalanches_path': avalanches_path,
         'PHATE_n_pca': PHATE_n_pca,
         'PHATE_knn': PHATE_knn,
         'PHATE_decay': PHATE_decay,
@@ -67,7 +69,8 @@ def pipeline(path_saving, patients_data, selected_subjects,
     if plot and plot_save and not os.path.exists(path_saving + '/figure/'):
         os.mkdir(path_saving + '/figure/')
 
-    if update or not os.path.exists(path_saving + '/avalanches.npy'):
+    if update or not os.path.exists(path_saving + '/avalanches.npy') or \
+            (avalanches_path is not None and os.path.exists(avalanches_path)):
         # compute the avalanches for each patient
         avalanches_bin = []
         # avalanches_sum = []
@@ -92,7 +95,10 @@ def pipeline(path_saving, patients_data, selected_subjects,
         avalanches_bin = np.array(avalanches_bin)
         np.save(path_saving + '/avalanches.npy', avalanches_bin)
     else:
-        avalanches_bin = np.load(path_saving + '/avalanches.npy', allow_pickle=True)
+        if avalanches_path is not None:
+            avalanches_bin = np.load(avalanches_path, allow_pickle=True)
+        else:
+            avalanches_bin = np.load(path_saving + '/avalanches.npy', allow_pickle=True)
 
     if plot:
         plt.figure()
