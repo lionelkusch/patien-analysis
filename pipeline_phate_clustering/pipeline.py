@@ -14,7 +14,8 @@ def pipeline(path_saving, patients_data, selected_subjects,
              avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1, avalanches_path=None,
              PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
              PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=-1,
-             kmeans_nb_cluster=5, kmeans_seed=123, update=False, save_for_matlab=False, plot=False, plot_save=True,
+             kmeans_nb_cluster=5, kmeans_seed=123, save_for_matlab=False, plot=False, plot_save=True,
+             update_avalanches=False, update_Phate=False, update_transition=False
              ):
     """
     Pipeline for extracting unsupervise clustering from resting state MEG data
@@ -39,7 +40,9 @@ def pipeline(path_saving, patients_data, selected_subjects,
     :param PHATE_n_jobs: number of CPU used for running the jobs
     :param kmeans_nb_cluster: number of cluster
     :param kmeans_seed: seed for the starting points
-    :param update: update the file already create
+    :param update_avalanches: update files from avalanches
+    :param update_Phate: update the file from Phate
+    :param update_transition: update the file from transition
     :param save_for_matlab: save the data for matlab
     :param plot: plot the result
     :param plot_save: save the plot in figure folder
@@ -62,6 +65,8 @@ def pipeline(path_saving, patients_data, selected_subjects,
         'kmeans_nb_cluster': kmeans_nb_cluster,
         'kmeans_seed': kmeans_seed
     }
+    update_Phate = update_avalanches or update_Phate
+    update_transition = update_avalanches or update_Phate or update_transition
 
     with open(path_saving + '/parameters.json', 'w+') as f:
         json.dump(parameters, f)
@@ -69,7 +74,7 @@ def pipeline(path_saving, patients_data, selected_subjects,
     if plot and plot_save and not os.path.exists(path_saving + '/figure/'):
         os.mkdir(path_saving + '/figure/')
 
-    if update or not os.path.exists(path_saving + '/avalanches.npy') or \
+    if update_avalanches or not os.path.exists(path_saving + '/avalanches.npy') or \
             (avalanches_path is not None and os.path.exists(avalanches_path)):
         # compute the avalanches for each patient
         avalanches_bin = []
@@ -110,7 +115,7 @@ def pipeline(path_saving, patients_data, selected_subjects,
             plt.close('all')
 
     # all data
-    if update or not os.path.exists(path_saving + "/Phate.npy"):
+    if update_Phate or not os.path.exists(path_saving + "/Phate.npy"):
         phate_operator = phate.PHATE(n_components=PHATE_n_components, n_jobs=PHATE_n_jobs, decay=PHATE_decay,
                                      n_pca=PHATE_n_pca,
                                      gamma=PHATE_gamma, knn=PHATE_knn, knn_dist=PHATE_knn_dist, mds_dist=PHATE_mds_dist)
@@ -144,18 +149,22 @@ def pipeline(path_saving, patients_data, selected_subjects,
             plt.savefig(path_saving + '/figure/cluster_3D.png');
             plt.close('all')
 
-    # compute transtion matrice
-    if update or not os.path.exists(path_saving + "/transition.npy"):
+    # compute transition matrix
+    if update_transition or not os.path.exists(path_saving + "/transition.npy"):
         cluster_patient_data = []
         begin = 0
         for avalanche in avalanches_bin:
             end = begin + len(avalanche)
             cluster_patient_data.append(cluster[begin:end])
             begin = end
+        histograms_region = []
+        for j in range(kmeans_nb_cluster):
+            histograms_region.append(np.sum(np.concatenate(avalanches_bin)[np.where(cluster == j)], axis=0))
+
         transition = np.empty((len(selected_subjects), kmeans_nb_cluster, kmeans_nb_cluster))
         histograms_patient = np.empty((len(selected_subjects), kmeans_nb_cluster))
         for index_patient, cluster_k in enumerate(cluster_patient_data):
-            hist = np.histogram(cluster_k, bins=kmeans_nb_cluster, range=(0, 12))
+            hist = np.histogram(cluster_k, bins=kmeans_nb_cluster, range=(0, kmeans_nb_cluster))
             histograms_patient[index_patient, :] = hist[0]
             next_step = cluster_k[1:]
             step = cluster_k[:-1]
@@ -169,15 +178,24 @@ def pipeline(path_saving, patients_data, selected_subjects,
         transition = np.array(transition)
         np.save(path_saving + "/transition.npy", transition)
         histograms_patient = np.array(histograms_patient)
-        np.save(path_saving + "/histograms.npy", histograms_patient)
+        np.save(path_saving + "/histograms_patient.npy", histograms_patient)
+        histograms_region = np.array(histograms_region)
+        np.save(path_saving + "/histograms_region.npy", histograms_region)
         cluster_patient_data = np.array(cluster_patient_data)
         np.save(path_saving + "/cluster_patient_data.npy", cluster_patient_data)
     else:
         transition = np.load(path_saving + "/transition.npy")
-        histograms_patient = np.load(path_saving + "/histograms.npy")
+        histograms_patient = np.load(path_saving + "/histograms_patient.npy")
+        histograms_region = np.load(path_saving + "/histograms_region.npy")
         cluster_patient_data = np.load(path_saving + "/cluster_patient_data.npy", allow_pickle=True)
 
     if plot:
+        fig, axs = plt.subplots(1, 1, figsize=(20, 10))
+        plt.imshow(histograms_region / histograms_region.max(axis=0).reshape(1, len(avalanches_bin[0][0])))
+        if plot_save:
+            plt.savefig(path_saving + '/figure/vector_cluster.pdf');
+            plt.close('all')
+
         for index_patient, cluster_k in enumerate(cluster_patient_data):
             fig, axs = plt.subplots(1, 2, figsize=(20, 10))
             fig.suptitle('patient :' + str(index_patient))
