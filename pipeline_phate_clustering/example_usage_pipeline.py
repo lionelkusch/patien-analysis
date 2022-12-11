@@ -23,6 +23,6 @@ pipeline(path_saving, data, selected_subjects,
              avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1,
              PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
              PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=8,
-             kmeans_nb_cluster=5, kmeans_seed=123,
+             kmeans_nb_cluster=7, kmeans_seed=123,
              update_avalanches=False, update_Phate=False, update_transition=False,
              save_for_matlab=True, plot=False, plot_save=True)
