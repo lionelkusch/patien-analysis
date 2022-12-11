@@ -181,7 +181,7 @@ def pipeline(path_saving, patients_data, selected_subjects,
         np.save(path_saving + "/histograms_patient.npy", histograms_patient)
         histograms_region = np.array(histograms_region)
         np.save(path_saving + "/histograms_region.npy", histograms_region)
-        cluster_patient_data = np.array(cluster_patient_data)
+        cluster_patient_data = np.array(cluster_patient_data, dtype=object)
         np.save(path_saving + "/cluster_patient_data.npy", cluster_patient_data)
     else:
         transition = np.load(path_saving + "/transition.npy")
