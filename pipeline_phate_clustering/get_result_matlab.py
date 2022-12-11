@@ -22,7 +22,7 @@ transition = np.load(path_saving + "/transition.npy")
 histograms_patient = np.load(path_saving + "/histograms_patient.npy")
 
 # cluster_data
-PHATE_knn = 5
+PHATE_knn = 7
 PHATE_decay = 1.0
 path_cluster = "/home/kusch/Documents/project/patient_analyse/paper/cluster_measure/sensibility_analysis/PHATE_KNN_"+str(PHATE_knn)+'_decay_'+str(PHATE_decay)+'/'
 data_cluster = np.load(path_cluster + '/measure_cluster.npy', allow_pickle=True)
