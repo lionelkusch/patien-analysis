@@ -1,88 +1,38 @@
+import scipy.io as io
 import numpy as np
-from sklearn.metrics import silhouette_samples, silhouette_score
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-# from sklearn.mixture import GaussianMixture
-# import scipy.cluster.hierarchy as hier; heirachical_graph=hier.dendrogram(hier.linkage(X, method='ward')) #method='ward' uses the Ward variance minimization algorithm
+import os
+import h5py
 
-def generate_cluster_precision(path_data, path_saving, range_n_clusters, range_kmeans_seed, nrefs):
-    """
-    compute the elbow, the silhouette and the gap statistic measure for different number of cluster and seed
-    :param path_data: path of the Phate data
-    :param path_saving: path of folder for saving result
-    :param range_n_clusters: array fo cluster to test
-    :param range_kmeans_seed: array fo seed to test
-    :param nrefs: number of random data for the gap statistic
-    :return:
-    """
-    data = np.load(path_data + "/Phate.npy")
-    result = []
-    for n_clusters in range_n_clusters:
-        for kmeans_seed in range_kmeans_seed:
-            clusterer = KMeans(n_clusters=n_clusters, random_state=kmeans_seed)
-            cluster_labels = clusterer.fit_predict(data)
-            silhouette_avg = silhouette_score(data, cluster_labels)
 
-            # For n references, generate random sample and perform kmeans getting resulting dispersion of each loop
-            refDisps = []
-            for i in range(nrefs):
-                # Create new random reference set
-                randomReference = np.random.random_sample(size=data.shape)
-                # Fit to it
-                km = KMeans(n_clusters=n_clusters, random_state=kmeans_seed).fit(randomReference).inertia_
-                refDisps.append(km)
+# Preparation data for the pipeline
+path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+f = h5py.File(path_data + 'serie_Melbourne.mat', 'r')
+struArray = f['D']
+patients_data = {}
+Nsubs = 44
+nregions = 90
+for i in range(Nsubs):
+    patients_data['%d' % i] = np.swapaxes(f[struArray[i, 0]][:nregions, :], 0, 1)
 
-            result.append((n_clusters, kmeans_seed, # parameter
-                           clusterer.inertia_, # elbow
-                           silhouette_avg, silhouette_samples(data, cluster_labels), # silhouette
-                           np.log(np.mean(refDisps)) - np.log(clusterer.inertia_) # gap statistic
-                           ))
-            print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg,
-                  " elbow :", clusterer.inertia_,
-                  " gap statistic :", np.log(np.mean(refDisps)) - np.log(clusterer.inertia_))
-    np.save(path_saving + '/measure_cluster.npy', result)
+# data from pipeline
+path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/default/"
+avalanches_bin = np.load(path_saving + '/avalanches.npy', allow_pickle=True)
+Y_phate = np.load(path_saving + "/Phate.npy")
+transition = np.load(path_saving + "/transition.npy")
+histograms_patient = np.load(path_saving + "/histograms_patient.npy")
 
-def plot_cluster_analisys(path):
-    """
-    plot the result of the measure of clustering
-    :param path: path of the measure_cluster
-    :return:
-    """
-    # get data
-    data = np.load(path + 'result_silhouette.npy', allow_pickle=True)
-    nb_cluster = data[:, 0]
-    elbow = data[:, 2]
-    silhouette_avg = data[:, 3]
-    gap_statistic = data[:, 5]
+# cluster_data
+PHATE_knn = 5
+PHATE_decay = 1.0
+path_cluster = "/home/kusch/Documents/project/patient_analyse/paper/cluster_measure/sensibility_analysis/PHATE_KNN_"+str(PHATE_knn)+'_decay_'+str(PHATE_decay)+'/'
+data_cluster = np.load(path_cluster + '/measure_cluster.npy', allow_pickle=True)
 
-    # plot elbow measure
-    plt.figure()
-    plt.plot(nb_cluster, elbow, '.-')
-    plt.grid()
-    plt.ylabel('elbow')
-    plt.savefig(path+'/elbow.png')
+dic_data = {'source_reconstruction_MEG': patients_data,
+    'avalanches_binarize': avalanches_bin,
+    'PHATE_position': Y_phate,
+    'transition_matrix': transition,
+    'histogram': histograms_patient,
+    'cluster':[[i[1], i[0]] for i in data_cluster]}
 
-    # plot average silhouette
-    plt.figure()
-    plt.plot(nb_cluster, silhouette_avg, '.-')
-    plt.grid()
-    plt.ylabel('silhouette_avg')
-    plt.savefig(path+'/silhouette_avg.png')
 
-    # plot gap statistic
-    plt.figure()
-    plt.plot(nb_cluster, gap_statistic, '.-')
-    plt.grid()
-    plt.ylabel('gap_statistic')
-    plt.savefig(path+'/gap_statistic.png')
-
-if __name__ == "__main__":
-    path_data = "/home/kusch/Documents/project/patient_analyse/paper/result/default/"
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/cluster_measure/default/"
-    range_n_clusters = np.arange(2, 15, 1)
-    kmeans_seed = 123
-    range_kmeans_seed = [123]  # np.arange(123, 133, 1)
-    nrefs = 100
-
-    generate_cluster_precision(path_data, path_saving, range_n_clusters, range_kmeans_seed, nrefs)
-    plot_cluster_analisys(path_saving)
+io.savemat(path_saving + '/data_with_cluster.mat', dic_data)
