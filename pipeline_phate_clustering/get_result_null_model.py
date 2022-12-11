@@ -75,7 +75,8 @@ def plot_cluster(data, data_num, title='patient : ', vmin=0.0, vmax=1.0):
         plt.subplots_adjust(left=0.005, right=1.0, wspace=0.0, top=1.0, bottom=0.005, hspace=0.15)
 
 
-def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plot=False):
+def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plot=False,
+                                   significatif=0.05, save_mat=False):
     """
     plot result for entropy of the shuffling cluster
     :param path_saving: path where are the result
@@ -90,6 +91,31 @@ def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plo
         data_null_model.append(np.load(path_saving + "/histograms_region_" + str(nb_rand) + ".npy"))
     data_patient = np.load(path_saving + "/histograms_region.npy")
 
+    pvalue_cluster_all = []
+    for index, cluster_region in enumerate(data_patient):
+        pvalue_all = np.sum(
+            np.sum(np.array(data_null_model) > cluster_region, axis=0) / nb_randomize, axis=0) / 5
+        significatif_high_all = pvalue_all > 1.0 - significatif
+        significatif_low_all = pvalue_all < significatif
+        significatif_all_all = np.logical_or(significatif_low_all, significatif_high_all)
+        pvalue_cluster_all.append(
+            [[pvalue_all], [significatif_all_all], [significatif_high_all], [significatif_low_all]])
+    pvalue_cluster_all = np.array(pvalue_cluster_all)
+    if save_mat:
+        io.savemat(path_saving + '/cluster_res_vector_null_trans.mat', {'transmatrix': 2*pvalue_cluster_all[:, 2, :, :]
+                                                                        + pvalue_cluster_all[:, 3, :, :]})
+    plot_cluster(pvalue_cluster_all[:, 0, :, :], pvalue_cluster_all[:, 0, :, :], title='cluster ')
+    if plot:
+        plt.savefig(path_saving + '/figure/cluster_res_pvalue.pdf')
+        plt.close('all')
+    plot_cluster(pvalue_cluster_all[:, 1, :, :], pvalue_cluster_all[:, 0, :, :], title='cluster ')
+    if plot:
+        plt.savefig(path_saving + '/figure/cluster_res_pvalue_significatif.pdf')
+        plt.close('all')
+    else:
+        plt.show()
+
+    # entropy plotting
     for index, data_cluster in enumerate(data_patient):
         entropy_values = []
         for data in data_null_model:
@@ -160,9 +186,10 @@ def null_model_transition(path_saving, nb_randomize=100, significatif=0.05, plot
         ax = plt.subplot(131 + index)
         ax.set_title(title)
         im = plt.imshow(data)
-        fig.colorbar(im, ax=ax)
+        fig.colorbar(im, ax=ax, fraction=0.05)
         for (j, i), label in np.ndenumerate(data):
             ax.text(i, j, np.around(label, 4), ha='center', va='center')
+        plt.subplots_adjust(top=1.0, bottom=0.0, left=0.001, right=0.97 )
     if plot:
         plt.savefig(path_saving + '/figure/transition_patient_std.pdf')
         plt.close('all')
@@ -325,16 +352,18 @@ def null_model_data_entropy(path_saving, path_saving_patient, nb_randomize=100, 
     else:
         plt.show()
 
-null_model_cluster_regions_res(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                               plot=True)
-null_model_transition(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                      plot=True)
-null_model_transition_all(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+if __name__ == '__main__':
+    null_model_cluster_regions_res(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+                                   plot=True, significatif=0.05/(90*7),  # precision/(number of region * number of cluster)
+                                   save_mat=True, nb_randomize=10000)
+    null_model_transition(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
                           plot=True)
-null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
-                path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                significatif=0.05, plot=True, save_mat=True)
-null_model_data_entropy(
-    path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
-    path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-    plot=True)
+    null_model_transition_all(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+                              plot=True)
+    null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
+                    path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+                    significatif=0.05, plot=True, save_mat=True)
+    null_model_data_entropy(
+        path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
+        path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+        plot=True)

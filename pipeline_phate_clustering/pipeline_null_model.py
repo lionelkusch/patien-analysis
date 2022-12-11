@@ -366,16 +366,16 @@ def null_model_data(path_saving, avalanches_path=None,
         if plot and not plot_save:
             plt.show()
 
-
-null_model_cluster_regions(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                           plot_save=True, nb_randomize=10000)
-null_model_transition(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                      plot_save=True)
-null_model_transition_all(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+if __name__ == '__main__':
+    null_model_cluster_regions(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+                               plot_save=True, nb_randomize=10000)
+    null_model_transition(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
                           plot_save=True)
-null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/", avalanches_path=None,
-                PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
-                PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=1,
-                kmeans_nb_cluster=7, kmeans_seed=123, plot=True, plot_save=True,
-                update_Phate=False, update_transition=False,
-                nb_randomize=100, seed=123)
+    null_model_transition_all(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+                              plot_save=True)
+    null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/", avalanches_path=None,
+                    PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
+                    PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=1,
+                    kmeans_nb_cluster=7, kmeans_seed=123, plot=True, plot_save=True,
+                    update_Phate=False, update_transition=False,
+                    nb_randomize=100, seed=123)
