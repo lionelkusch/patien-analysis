@@ -43,11 +43,10 @@ def generate_cluster_precision(path_data, path_saving, range_n_clusters, range_k
                   " gap statistic :", np.log(np.mean(refDisps)) - np.log(clusterer.inertia_))
     np.save(path_saving + '/measure_cluster.npy', result)
 
-def plot_cluster_analisys(path, size_data=61688):
+def plot_cluster_analysis(path):
     """
     plot the result of the measure of clustering
     :param path: path of the measure_cluster
-    :param size_data: number of element in data use for the gap statistic
     :return:
     """
     # get data
@@ -55,7 +54,6 @@ def plot_cluster_analisys(path, size_data=61688):
     nb_clusters = data[:, 1]
     elbow = data[:, 3]
     silhouette_avg = data[:, 4]
-    gap_statistic = data[:, 6]
 
     # plot elbow measure
     plt.figure()
@@ -72,57 +70,32 @@ def plot_cluster_analisys(path, size_data=61688):
     plt.savefig(path+'/silhouette_avg.png')
 
     # plot gap statistic
-    plt.figure()
     ref_ = np.concatenate(data[:, 7])
-    mean_ref = np.log(np.mean(ref_, axis=1))
-    gap_stat_value = mean_ref - np.log(np.array(elbow, dtype=float))
-    plt.plot(nb_clusters, gap_stat_value, '.-')
-    previous_gap = 0.0
-    for index, nb_cluster in enumerate(nb_clusters):
+    mean_ref = np.mean(np.log(ref_), axis=1)
+    std_ref = np.std(np.log(ref_), axis=1)
+    gap_stat_values = mean_ref - np.log(np.array(elbow, dtype=float))
+    plt.figure()
+    plt.plot(nb_clusters, gap_stat_values, '.-')
+    previous = 0.0
+    for index, (nb_cluster, gap_stat_value) in enumerate(zip(nb_clusters, gap_stat_values)):
         # https://rpubs.com/Yoann/587951
         # https://towardsdatascience.com/k-means-clustering-and-the-gap-statistics-4c5d414acd29
         # https://www.researchgate.net/post/How-to-interpret-the-output-of-Gap-Statistics-method-for-clustering
         # https://hastie.su.domains/Papers/gap.pdf
         # https://stats.stackexchange.com/questions/95290/how-should-i-interpret-gap-statistic
-        ref_ = data[index, 7]
-        mean_ref = np.log(np.mean(ref_))
-        std = np.log(np.std(ref_))
-        gap_stat_value = mean_ref - np.log(elbow[index])
-        plt.plot([nb_cluster, nb_cluster], [gap_stat_value+std, gap_stat_value-std], 'g')
-        if index != 0 and np.abs(previous_gap - gap_stat_value) < std*np.sqrt(1+1/size_data):
-            plt.plot(nb_cluster, gap_statistic[index], 'r*')
-        previous_gap = gap_stat_value
+        plt.plot([nb_cluster, nb_cluster],
+                 [gap_stat_value + std_ref[index], gap_stat_value - std_ref[index]], 'g')
+        if index + 1 != len(nb_clusters) \
+                and gap_stat_value > gap_stat_values[index + 1] + std_ref[index + 1] \
+                and gap_stat_value > previous:
+            previous = gap_stat_value
+            plt.plot(nb_cluster, gap_stat_value, 'r*')
     plt.grid()
     plt.ylabel('gap_statistic')
     plt.savefig(path+'/gap_statistic.png')
 
-    # plot gap statistic
-    plt.figure()
-    ref_ = np.concatenate(data[:, 7])
-    mean_ref = np.log(np.mean(ref_, axis=1))
-    gap_stat_value = mean_ref - np.log(np.array(elbow, dtype=float))
-    plt.plot(nb_clusters, gap_stat_value, '.-')
-    previous_gap = 0.0
-    for index, nb_cluster in enumerate(nb_clusters):
-        # https://rpubs.com/Yoann/587951
-        # https://towardsdatascience.com/k-means-clustering-and-the-gap-statistics-4c5d414acd29
-        # https://www.researchgate.net/post/How-to-interpret-the-output-of-Gap-Statistics-method-for-clustering
-        # https://hastie.su.domains/Papers/gap.pdf
-        # https://stats.stackexchange.com/questions/95290/how-should-i-interpret-gap-statistic
-        ref_ = data[index, 7]
-        # mean after ?????????
-        mean_ref = np.mean(np.log(ref_))
-        std = np.std(np.log(ref_))
-        gap_stat_value = mean_ref - np.log(elbow[index])
-        plt.plot([nb_cluster, nb_cluster], [gap_stat_value+std, gap_stat_value-std], 'g')
-        if index != 0 and np.abs(previous_gap - gap_stat_value) < std*np.sqrt(1+1/size_data):
-            plt.plot(nb_cluster, gap_statistic[index], 'r*')
-        previous_gap = gap_stat_value
-    plt.grid()
-    plt.ylabel('gap_statistic')
-    plt.savefig(path+'/gap_statistic_2.png')
 
-def plot_cluster_all_gap_statistic(path_saving_root, path_data_root, range_PHATE_knn, range_PHATE_decay, size_data=61688):
+def plot_cluster_all_gap_statistic(path_saving_root, path_data_root, range_PHATE_knn, range_PHATE_decay):
     nb_PHATE_knn = len(range_PHATE_knn)
     nb_PHATE_decay = len(range_PHATE_decay)
     fig, axis = plt.subplots(nb_PHATE_decay, nb_PHATE_knn, figsize=(20,20))
@@ -149,8 +122,6 @@ def plot_cluster_all_gap_statistic(path_saving_root, path_data_root, range_PHATE
                 # https://hastie.su.domains/Papers/gap.pdf
                 # https://stats.stackexchange.com/questions/95290/how-should-i-interpret-gap-statistic
                 axis[index_decay, index_knn].plot([nb_cluster, nb_cluster], [gap_stat_value+std_ref[index], gap_stat_value-std_ref[index]], 'g')
-                # if index != 0 and np.abs(previous_gap - gap_stat_value) < std*np.sqrt(1+1/size_data):
-                print(index, len(nb_clusters))
                 if index+1 != len(nb_clusters)\
                     and gap_stat_value > gap_stat_values[index+1] + std_ref[index+1]\
                     and gap_stat_value > previous:
@@ -194,15 +165,14 @@ def plot_cluster_all_gap_statistic(path_saving_root, path_data_root, range_PHATE
 if __name__ == "__main__":
     import os
     path_data_default = "/home/kusch/Documents/project/patient_analyse/paper/result/default/"
-    path_saving_default = "/home/kusch/Documents/project/patient_analyse/paper/cluster_measure/default/"
+    path_saving_default = "/home/kusch/Documents/project/patient_analyse/paper/result/cluster_measure/default/"
     range_n_clusters = np.arange(2, 15, 1)
     kmeans_seed = 123
     range_kmeans_seed = [123]  # np.arange(123, 133, 1)
     nrefs = 100
-    size_data = 61688
 
     path_data_root = "/home/kusch/Documents/project/patient_analyse/paper/result/sensibility_analysis/"
-    path_saving_root = "/home/kusch/Documents/project/patient_analyse/paper/cluster_measure/sensibility_analysis/"
+    path_saving_root = "/home/kusch/Documents/project/patient_analyse/paper/result/cluster_measure/sensibility_analysis/"
 
     range_PHATE_knn = [2, 3, 4, 5, 6, 7, 10]
     range_PHATE_decay = [0.1, 1.0, 10.0, 100.0]
@@ -216,6 +186,6 @@ if __name__ == "__main__":
                     os.mkdir(path_saving)
                 if not os.path.exists(path_saving+'measure_cluster.npy'):
                     generate_cluster_precision(path_data, path_saving, range_n_clusters, range_kmeans_seed, nrefs)
-                plot_cluster_analisys(path_saving, size_data=size_data)
+                plot_cluster_analysis(path_saving)
                 plt.close('all')
     plot_cluster_all_gap_statistic(path_saving_root, path_saving_root, range_PHATE_knn, range_PHATE_decay)

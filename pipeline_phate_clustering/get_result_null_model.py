@@ -31,7 +31,8 @@ def plot_pvalue(data, data_num, title='patient : '):
             bottom=False,  # ticks along the bottom edge are off
             top=False,  # ticks along the top edge are off
             labelbottom=False)
-    for index_no_patient in range(18, nb_x * nb_y):
+
+    for index_no_patient in range(nb_patient, nb_x * nb_y):
         axs[int(index_no_patient % nb_x), int(index_no_patient / nb_x)].imshow(
             np.ones_like(data[0]) * np.NAN, vmin=0.0, vmax=1.0)
         axs[int(index_no_patient % nb_x), int(index_no_patient / nb_x)].autoscale(False)
@@ -74,6 +75,24 @@ def plot_cluster(data, data_num, title='patient : ', vmin=0.0, vmax=1.0):
             axs[index_patient].tick_params(axis='both', which='both', bottom=False, top=False, labelbottom=False)
         plt.subplots_adjust(left=0.005, right=1.0, wspace=0.0, top=1.0, bottom=0.005, hspace=0.15)
 
+def plot_block_cluster(data, data_num, title='cluster ', vmin=0.0, vmax=1.0, fontsize=2):
+    """
+    plot matrix
+    :param data: data for the color
+    :param data_num:  data for the number
+    :param title: title of the figure
+    :param vmin: minimum values for the color
+    :param vmax: maximum value for the color
+    :return:
+    """
+    im = plt.imshow(data[0], vmin=vmin, vmax=vmax)
+    plt.title(title)
+    # plt.autoscale(False)
+    for (j, i), label in np.ndenumerate(data_num[0]):
+        plt.text(i, j, np.around(label, 2), ha='center', va='center', fontsize=fontsize)
+    plt.tick_params(axis='both', which='both', bottom=False, top=False, labelbottom=False)
+    plt.subplots_adjust(left=0.005, right=1.0, wspace=0.0, top=0.96, bottom=0.005, hspace=0.15)
+
 
 def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plot=False,
                                    significatif=0.05, save_mat=False):
@@ -90,11 +109,12 @@ def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plo
     for nb_rand in range(nb_randomize):
         data_null_model.append(np.load(path_saving + "/histograms_region_" + str(nb_rand) + ".npy"))
     data_patient = np.load(path_saving + "/histograms_region.npy")
+    nb_cluster = data_patient.shape[0]
 
     pvalue_cluster_all = []
     for index, cluster_region in enumerate(data_patient):
         pvalue_all = np.sum(
-            np.sum(np.array(data_null_model) > cluster_region, axis=0) / nb_randomize, axis=0) / 5
+            np.sum(np.array(data_null_model) > cluster_region, axis=0) / nb_randomize, axis=0) / nb_cluster
         significatif_high_all = pvalue_all > 1.0 - significatif
         significatif_low_all = pvalue_all < significatif
         significatif_all_all = np.logical_or(significatif_low_all, significatif_high_all)
@@ -102,13 +122,16 @@ def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plo
             [[pvalue_all], [significatif_all_all], [significatif_high_all], [significatif_low_all]])
     pvalue_cluster_all = np.array(pvalue_cluster_all)
     if save_mat:
-        io.savemat(path_saving + '/cluster_res_vector_null_trans.mat', {'transmatrix': 2*pvalue_cluster_all[:, 2, :, :]
-                                                                        + pvalue_cluster_all[:, 3, :, :]})
-    plot_cluster(pvalue_cluster_all[:, 0, :, :], pvalue_cluster_all[:, 0, :, :], title='cluster ')
+        io.savemat(path_saving + '/cluster_res_vector_null_trans.mat',
+                   {'transmatrix': 2 * pvalue_cluster_all[:, 2, :, :]
+                                   + pvalue_cluster_all[:, 3, :, :]})
+    plot_block_cluster(pvalue_cluster_all[:, 0, :, :].swapaxes(0, 1), pvalue_cluster_all[:, 0, :, :].swapaxes(0, 1),
+                 title='p_values')
     if plot:
         plt.savefig(path_saving + '/figure/cluster_res_pvalue.pdf')
         plt.close('all')
-    plot_cluster(pvalue_cluster_all[:, 1, :, :], pvalue_cluster_all[:, 0, :, :], title='cluster ')
+    plot_block_cluster(pvalue_cluster_all[:, 1, :, :].swapaxes(0, 1), pvalue_cluster_all[:, 0, :, :].swapaxes(0, 1),
+                 title='significant')
     if plot:
         plt.savefig(path_saving + '/figure/cluster_res_pvalue_significatif.pdf')
         plt.close('all')
@@ -133,8 +156,8 @@ def null_model_cluster_regions_res(path_saving, nb_randomize=100, base=None, plo
     print('cluster all ' + str(entropy(data_patient.ravel(), base=base)) + ' ' + str(np.mean(entropy_values)))
     plt.figure()
     plt.suptitle('all_cluster')
-    plt.hist(entropy_values)
-    plt.vlines(entropy(data_patient.ravel(), base=base), ymin=0.0, ymax=20.0, color='r')
+    y, x, _ = plt.hist(entropy_values)
+    plt.vlines(entropy(data_patient.ravel(), base=base), ymin=0.0, ymax=y.max(), color='r')
     if plot:
         plt.savefig(path_saving + '/figure/cluster_entropy.pdf')
         plt.close('all')
@@ -189,7 +212,7 @@ def null_model_transition(path_saving, nb_randomize=100, significatif=0.05, plot
         fig.colorbar(im, ax=ax, fraction=0.05)
         for (j, i), label in np.ndenumerate(data):
             ax.text(i, j, np.around(label, 4), ha='center', va='center')
-        plt.subplots_adjust(top=1.0, bottom=0.0, left=0.001, right=0.97 )
+        plt.subplots_adjust(top=1.0, bottom=0.0, left=0.001, right=0.97)
     if plot:
         plt.savefig(path_saving + '/figure/transition_patient_std.pdf')
         plt.close('all')
@@ -282,9 +305,10 @@ def null_model_data(path_saving, path_saving_patient, nb_randomize=100, signific
                     }
 
     pvalue_cluster_all = []
+    nb_cluster = data_patient['histogram_region'].shape[0]
     for index, cluster_region in enumerate(data_patient['histogram_region']):
         pvalue_all = np.sum(
-            np.sum(np.array(data_null_model['histogram_region']) > cluster_region, axis=0) / nb_randomize, axis=0) / 5
+            np.sum(np.array(data_null_model['histogram_region']) > cluster_region, axis=0) / nb_randomize, axis=0) / nb_cluster
         significatif_high_all = pvalue_all > 1.0 - significatif
         significatif_low_all = pvalue_all < significatif
         significatif_all_all = np.logical_or(significatif_low_all, significatif_high_all)
@@ -292,13 +316,15 @@ def null_model_data(path_saving, path_saving_patient, nb_randomize=100, signific
             [[pvalue_all], [significatif_all_all], [significatif_high_all], [significatif_low_all]])
     pvalue_cluster_all = np.array(pvalue_cluster_all)
     if save_mat:
-        io.savemat(path_saving + '/vector_null_trans.mat', {'transmatrix': 2*pvalue_cluster_all[:, 2, :, :]
+        io.savemat(path_saving + '/vector_null_trans.mat', {'transmatrix': 2 * pvalue_cluster_all[:, 2, :, :]
                                                                            + pvalue_cluster_all[:, 3, :, :]})
-    plot_cluster(pvalue_cluster_all[:, 0, :, :], pvalue_cluster_all[:, 0, :, :], title='cluster ')
+    plot_block_cluster(pvalue_cluster_all[:, 0, :, :].swapaxes(0, 1), pvalue_cluster_all[:, 0, :, :].swapaxes(0, 1),
+                       title='pvalue')
     if plot:
         plt.savefig(path_saving + '/figure/cluster_pvalue.pdf')
         plt.close('all')
-    plot_cluster(pvalue_cluster_all[:, 1, :, :], pvalue_cluster_all[:, 0, :, :], title='cluster ')
+    plot_block_cluster(pvalue_cluster_all[:, 1, :, :].swapaxes(0, 1), pvalue_cluster_all[:, 0, :, :].swapaxes(0, 1),
+                       title='significant')
     if plot:
         plt.savefig(path_saving + '/figure/cluster_pvalue_significatif.pdf')
         plt.close('all')
@@ -319,7 +345,7 @@ def null_model_data_entropy(path_saving, path_saving_patient, nb_randomize=100, 
     # load value
     data_null_model = []
     for nb_rand in range(nb_randomize):
-        data_null_model.append(np.load(path_saving + "/"+str(nb_rand)+"_histograms_region.npy"))
+        data_null_model.append(np.load(path_saving + "/" + str(nb_rand) + "_histograms_region.npy"))
     data_patient = np.load(path_saving_patient + "/histograms_region.npy")
 
     # entropy for each cluster
@@ -331,10 +357,10 @@ def null_model_data_entropy(path_saving, path_saving_patient, nb_randomize=100, 
             np.mean(entropy_values)))
         plt.figure()
         plt.suptitle('cluster ' + str(index))
-        plt.hist(entropy_values)
-        plt.vlines(entropy(data_patient[index], base=base), ymin=0.0, ymax=20.0, color='r')
+        y, x, _ = plt.hist(entropy_values)
+        plt.vlines(entropy(data_patient[index], base=base), ymin=0.0, ymax=y.max(), color='r')
         if plot:
-            plt.savefig(path_saving + '/figure/null_nmodel_cluster_entropy_'+str(index)+'.pdf')
+            plt.savefig(path_saving + '/figure/null_nmodel_cluster_entropy_' + str(index) + '.pdf')
             plt.close('all')
 
     # entropy for all cluster
@@ -344,17 +370,19 @@ def null_model_data_entropy(path_saving, path_saving_patient, nb_randomize=100, 
     print('cluster all ' + str(entropy(data_patient.ravel(), base=base)) + ' ' + str(np.mean(entropy_values)))
     plt.figure()
     plt.suptitle('all_cluster')
-    plt.hist(entropy_values)
-    plt.vlines(entropy(data_patient.ravel(), base=base), ymin=0.0, ymax=20.0, color='r')
+    y, x, _ = plt.hist(entropy_values)
+    plt.vlines(entropy(data_patient.ravel(), base=base), ymin=0.0, ymax=y.max(), color='r')
     if plot:
         plt.savefig(path_saving + '/figure/null_nmodel_cluster_entropy.pdf')
         plt.close('all')
     else:
         plt.show()
 
+
 if __name__ == '__main__':
     null_model_cluster_regions_res(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                                   plot=True, significatif=0.05/(90*7),  # precision/(number of region * number of cluster)
+                                   plot=True, significatif=0.05 / (90 * 7),
+                                   # precision/(number of region * number of cluster)
                                    save_mat=True, nb_randomize=10000)
     null_model_transition(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
                           plot=True)
