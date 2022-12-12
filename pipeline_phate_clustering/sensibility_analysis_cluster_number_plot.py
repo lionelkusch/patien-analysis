@@ -96,6 +96,14 @@ def plot_cluster_analysis(path):
 
 
 def plot_cluster_all_gap_statistic(path_saving_root, path_data_root, range_PHATE_knn, range_PHATE_decay):
+    """
+    plot elbow, gap statistic and silhouette for sensibility analysis of PHATE kernel
+    :param path_saving_root: saving figure
+    :param path_data_root: generated result
+    :param range_PHATE_knn: range of value fr K of K neighbor
+    :param range_PHATE_decay: range of value for decay of affinity
+    :return:
+    """
     nb_PHATE_knn = len(range_PHATE_knn)
     nb_PHATE_decay = len(range_PHATE_decay)
     fig, axis = plt.subplots(nb_PHATE_decay, nb_PHATE_knn, figsize=(20,20))
