@@ -175,6 +175,20 @@ def pipeline(path_saving, patients_data, selected_subjects,
                     percentage_trans = np.concatenate(
                         [percentage_trans, np.zeros(kmeans_nb_cluster - percentage_trans.shape[0])])
                 transition[index_patient, i, :] = percentage_trans / len(data)
+        transition_all = np.empty((kmeans_nb_cluster, kmeans_nb_cluster))
+        cluster_all = np.concatenate(cluster_patient_data)
+        hist_all = np.histogram(cluster_all, bins=kmeans_nb_cluster, range=(0, kmeans_nb_cluster))[0]
+        next_step = cluster_all[1:]
+        step = cluster_all[:-1]
+        for i in range(kmeans_nb_cluster):
+            data = next_step[np.where(step == i)]
+            percentage_trans = np.bincount(data)
+            if len(percentage_trans) < kmeans_nb_cluster:
+                percentage_trans = np.concatenate(
+                    [percentage_trans, np.zeros(kmeans_nb_cluster - percentage_trans.shape[0])])
+            transition_all[i, :] = percentage_trans / len(data)
+
+        np.save(path_saving + "/transition_all.npy", transition_all)
         transition = np.array(transition)
         np.save(path_saving + "/transition.npy", transition)
         histograms_patient = np.array(histograms_patient)
