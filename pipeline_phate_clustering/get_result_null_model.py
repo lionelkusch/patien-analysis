@@ -503,7 +503,9 @@ if __name__ == '__main__':
                               plot=True)
     null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
                     path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                    significatif=0.05, plot=True, save_mat=True)
+                    plot=True, save_mat=True,
+                    significatif=0.05  # 0.2
+                    )
     null_model_data_entropy(
         path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
         path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
