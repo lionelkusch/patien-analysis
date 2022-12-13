@@ -17,14 +17,19 @@ display(colour_range);
 % Use only the most superfial areas
 indices_in_same_order_as_in_Brainwave = select_ROIs_from_full_AAL(cfg);
 labels = tmplabels(indices_in_same_order_as_in_Brainwave,:); %78 labels
-    %% plot
-    [colourbar_handle, patch_handles] = PaintBrodmannAreas_new2_clean(labels, data, length(data),length(data),nr_views, colour_range, colourbar_threshold, mesh_type, mesh_labels);
-    set(gcf,'Tag','ShowBrainFigure');
-    
-    if (plot)
-        fig = gcf;
-        fig.Position = [0 0 2000 2000];
-        saveas(gcf, file_name)
-        close('all')
-    end
+if (plot)
+    fh1=figure('visible','off');
+else
+    fh1 = figure();
+end
+%% plot
+[colourbar_handle, patch_handles] = PaintBrodmannAreas_new2_clean(labels, data, length(data),length(data),nr_views, colour_range, colourbar_threshold, mesh_type, mesh_labels);
+set(gcf,'Tag','ShowBrainFigure');
+
+if (plot)
+    fig = gcf;
+    fig.Position = [0 0 2000 2000];
+    saveas(gcf, file_name)
+    close('all')
+end
 end
