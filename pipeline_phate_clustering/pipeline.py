@@ -18,7 +18,7 @@ def pipeline(path_saving, patients_data, selected_subjects,
              update_avalanches=False, update_Phate=False, update_transition=False
              ):
     """
-    Pipeline for extracting unsupervise clustering from resting state MEG data
+    Pipeline for extracting unsupervised clustering from resting state MEG data
     The Pipeline is composed on 3 steps:
         1) compute the avalanches from time series
         2) use PATHE for dimension reduction of the data
