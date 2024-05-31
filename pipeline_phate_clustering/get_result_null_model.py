@@ -3,6 +3,7 @@ import numpy as np
 from scipy.stats import entropy
 import scipy.io as io
 
+
 def get_color_map():
     """
     get color map with extreme values in blue or red
@@ -92,6 +93,7 @@ def plot_cluster(data, data_num, title='patient : ', vmin=0.0, vmax=1.0, cmap='v
                 axs[index_patient].text(i, j, np.around(label, 2), ha='center', va='center', fontsize=5)
             axs[index_patient].tick_params(axis='both', which='both', bottom=False, top=False, labelbottom=False)
         plt.subplots_adjust(left=0.005, right=1.0, wspace=0.0, top=1.0, bottom=0.005, hspace=0.15)
+
 
 def plot_block_cluster(data, data_num, title='cluster ', vmin=0.0, vmax=1.0, fontsize=2, cmap='viridis'):
     """
@@ -415,6 +417,7 @@ def null_model_data_entropy(path_saving, path_saving_patient, nb_randomize=100, 
     else:
         plt.show()
 
+
 def null_model_transition_order(path_saving, nb_randomize=100, significatif=0.05, plot=False):
     """
     plot the indicative for comparison transition between patient
@@ -490,6 +493,84 @@ def null_model_transition_order(path_saving, nb_randomize=100, significatif=0.05
         plt.show()
 
 
+def null_model_sanitary_check(path_saving, path_saving_patient, nb_randomize=100, plot=False):
+    """
+    plot the variability for each regions in each cluster
+    :param path_saving: path where are the result
+    :param path_saving_patient: path where to get the result from the patient
+    :param nb_randomize: number of randomisation to take into account
+    :param significatif: acceptation of the percentage to take into account
+    :param plot: save the figure or not
+    :param save_mat: saving the result in mat format
+    :return:
+    """
+    # load value
+    data_null_model = {'Y_phate': [],
+                       'transition': [],
+                       'histogram': [],
+                       'histogram_region': [],
+                       'cluster_patient': []
+                       }
+    for nb_rand in range(nb_randomize):
+        data_null_model['Y_phate'].append(np.load(path_saving + "/" + str(nb_rand) + "_Phate.npy"))
+        data_null_model['transition'].append(np.load(path_saving + "/" + str(nb_rand) + "_transition.npy"))
+        data_null_model['histogram'].append(np.load(path_saving + "/" + str(nb_rand) + "_histograms_patient.npy"))
+        data_null_model['histogram_region'].append(np.load(path_saving + "/" + str(nb_rand) + "_histograms_region.npy"))
+        data_null_model['cluster_patient'].append(
+            np.load(path_saving + "/" + str(nb_rand) + "_cluster_patient_data.npy", allow_pickle=True))
+
+    data_patient = {'Y_phate': np.load(path_saving_patient + "/Phate.npy"),
+                    'transition': np.load(path_saving_patient + "/transition.npy"),
+                    'histogram': np.load(path_saving_patient + "/histograms_patient.npy"),
+                    'histogram_region': np.load(path_saving_patient + "/histograms_region.npy"),
+                    'cluster_patient': np.load(path_saving_patient + "/cluster_patient_data.npy", allow_pickle=True)
+                    }
+
+    for i in range(nb_randomize):
+        # order the new matrix of cluster
+        # 1. measure the distance between the default cluster and the new cluster
+        measures = np.zeros((7, 7))
+        for x in range(7):
+            for y in range(7):
+                measures[x, y] = np.linalg.norm(data_null_model['histogram_region'][i][y]-data_patient['histogram_region'][x])
+        # 2. find the minimum distance between the clusters
+        indexes = np.argmin(measures, axis=1)
+        # 3. check if some cluster is closed to two other clusters and considere only this case
+        index_redon = np.where(np.bincount(indexes, minlength=7) > 1)[0]
+        assert len(index_redon) <= 1
+        index_not_redon = np.where(np.bincount(indexes, minlength=7) < 1)[0]
+        assert len(index_not_redon) <= 1
+        assert len(index_redon) == len(index_not_redon)
+        # 3.2 if one cluster is clos to 2 others, find the missing clusters and update the list of cluster
+        if len(index_redon) > 0:
+            assert np.argmin(measures, axis=0)[index_redon] in np.where(index_redon == indexes)[0]
+            index_replace = np.where(index_redon == indexes)[0]
+            index_replace = index_replace[np.where(index_replace != np.argmin(measures, axis=0)[index_redon])]
+            assert len(index_replace) == 1
+            indexes[index_replace] = index_not_redon
+        assert len(np.where(np.bincount(indexes, minlength=7) > 1)[0]) == 0
+
+        data_null_model['histogram_region'][i] = data_null_model['histogram_region'][i][indexes]
+
+    # compute mean and standard deviation of the distribution of cluster
+    mean = np.mean(data_null_model['histogram_region'], axis=0)
+    std = np.std(data_null_model['histogram_region'], axis=0)
+    plot_block_cluster([mean], [np.around(mean, decimals=1)], title='mean', vmax=np.max(mean), vmin=np.min(mean))
+    if plot:
+        plt.savefig(path_saving + '/figure/sanitary_check_cluster_mean.pdf')
+        plt.close('all')
+    plot_block_cluster([std/mean], [std/mean], title='cov', vmax=np.max(std/mean), vmin=np.min(std/mean))
+    if plot:
+        plt.savefig(path_saving + '/figure/sanitary_check_cluster_cov.pdf')
+        plt.close('all')
+    plot_block_cluster([std], [np.around(std, decimals=1)], title='std', vmax=np.max(std), vmin=np.min(std))
+    if plot:
+        plt.savefig(path_saving + '/figure/sanitary_check_cluster_std.pdf')
+        plt.close('all')
+    else:
+        plt.show()
+
+
 if __name__ == '__main__':
     null_model_cluster_regions_res(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
                                    plot=True, significatif=0.05 / (90 * 7),
@@ -510,3 +591,7 @@ if __name__ == '__main__':
         path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
         path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
         plot=True)
+    null_model_sanitary_check(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/sanitary_check/",
+                    path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+                    plot=True,
+                    )

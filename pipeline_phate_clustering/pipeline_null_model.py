@@ -185,6 +185,8 @@ def null_model_data(path_saving, avalanches_path=None,
                     nb_randomize=100, seed=123
                     ):
     """
+    Check the effect of shuffle the active regions in each avalanches pattern
+
     Pipeline for extracting unsupervised clustering from resting state MEG data
     The Pipeline is composed on 3 steps:
         1) compute the avalanches from time series
@@ -366,6 +368,199 @@ def null_model_data(path_saving, avalanches_path=None,
         if plot and not plot_save:
             plt.show()
 
+
+def sanitary_check_data(path_saving, avalanches_path=None,
+                    PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
+                    PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=-1,
+                    kmeans_nb_cluster=7, kmeans_seed=123, plot=False, plot_save=True,
+                    update_Phate=False, update_transition=False,
+                    nb_randomize=100, seed=123
+                    ):
+    """
+    Check the effect of changing order of avalanches
+
+    Pipeline for extracting unsupervised clustering from resting state MEG data
+    The Pipeline is composed on 3 steps:
+        1) compute the avalanches from time series
+        2) use PATHE for dimension reduction of the data
+        3) Cluster the output using Kmeans
+
+    :param path_saving: path for saving data
+    :param avalanches_path: path for already computed avalanches
+    :param PHATE_n_pca: the number of component used for the PCA
+    :param PHATE_knn: the number of neighboor for the k'neighboor algorithms
+    :param PHATE_decay: the decay of the connection with other nodes
+    :param PHATE_knn_dist: the type of distance use for the k'neighboor algorithms
+    :param PHATE_gamma: the type of distance used diffusion matrices
+    :param PHATE_mds_dist: the distance used for reduction dimension using mds algorithms
+    :param PHATE_n_components: number of dimension of reduce representation
+    :param PHATE_n_jobs: number of CPU used for running the jobs
+    :param kmeans_nb_cluster: number of cluster
+    :param kmeans_seed: seed for the starting points
+    :param update_Phate: update the file from Phate
+    :param update_transition: update the file from transition
+    :param plot: plot the result
+    :param plot_save: save the plot in figure folder
+    :param nb_randomize: number of randomize test
+    :param seed: seed for the randomisation, important for the reproducibility
+    :return:
+    """
+    update_transition = update_Phate or update_transition
+
+    if avalanches_path is not None:
+        avalanches_bin = np.load(avalanches_path, allow_pickle=True)
+    else:
+        avalanches_bin = np.load(path_saving + '/avalanches.npy', allow_pickle=True)
+    nb_regions = len(avalanches_bin[0][0])
+    avalanches_bin_cont = np.concatenate(avalanches_bin)
+
+    if not os.path.exists(path_saving + '/sanitary_check/'):
+        os.mkdir(path_saving + '/sanitary_check/')
+    path_saving = path_saving + '/sanitary_check/'
+
+    if plot and plot_save and not os.path.exists(path_saving + '/figure/'):
+        os.mkdir(path_saving + '/figure/')
+
+    rng = np.random.default_rng(seed=seed)
+    for nb_rand in range(nb_randomize):
+        rng.shuffle(avalanches_bin_cont)
+
+        # all data
+        if update_Phate or not os.path.exists(path_saving + "/" + str(nb_rand) + "_Phate.npy"):
+            phate_operator = phate.PHATE(n_components=PHATE_n_components, n_jobs=PHATE_n_jobs, decay=PHATE_decay,
+                                         n_pca=PHATE_n_pca,
+                                         gamma=PHATE_gamma, knn=PHATE_knn, knn_dist=PHATE_knn_dist,
+                                         mds_dist=PHATE_mds_dist)
+            Y_phate = phate_operator.fit_transform(avalanches_bin_cont)
+            np.save(path_saving + "/" + str(nb_rand) + "_Phate.npy", Y_phate)
+        else:
+            Y_phate = np.load(path_saving + "/" + str(nb_rand) + "_Phate.npy")
+
+        # Cluster Result
+        cluster = KMeans(n_clusters=kmeans_nb_cluster, random_state=kmeans_seed).fit_predict(Y_phate)
+
+        if plot:
+            plot_figure_2D(Y_phate, '', cluster)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'cluster_in_2D.png')
+                plt.close('all')
+            plot_figure_2D_patient(Y_phate, '', avalanches_bin)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'cluster_for_patient.png')
+                plt.close('all')
+            plot_figure_2D_patient_unique(Y_phate, '', avalanches_bin)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'cluster_for_patient_unique.png')
+                plt.close('all')
+            plot_figure_2D_patient_unique_time(Y_phate, '', avalanches_bin)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'cluster_for_patient_time.png')
+                plt.close('all')
+            plot_figure_2D_3D(Y_phate, '', cluster)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'cluster_3D.png')
+                plt.close('all')
+
+        # compute transition matrix
+        if update_transition or not os.path.exists(path_saving + "/" + str(nb_rand) + "_transition.npy"):
+            cluster_patient_data = []
+            begin = 0
+            for avalanche in avalanches_bin:
+                end = begin + len(avalanche)
+                cluster_patient_data.append(cluster[begin:end])
+                begin = end
+            histograms_region = []
+            for j in range(kmeans_nb_cluster):
+                histograms_region.append(np.sum(avalanches_bin_cont[np.where(cluster == j)], axis=0))
+
+            transition = np.empty((len(avalanches_bin), kmeans_nb_cluster, kmeans_nb_cluster))
+            histograms_patient = np.empty((len(avalanches_bin), kmeans_nb_cluster))
+            for index_patient, cluster_k in enumerate(cluster_patient_data):
+                hist = np.histogram(cluster_k, bins=kmeans_nb_cluster, range=(0, kmeans_nb_cluster))
+                histograms_patient[index_patient, :] = hist[0]
+                next_step = cluster_k[1:]
+                step = cluster_k[:-1]
+                for i in range(kmeans_nb_cluster):
+                    data = next_step[np.where(step == i)]
+                    percentage_trans = np.bincount(data)
+                    if len(percentage_trans) < kmeans_nb_cluster:
+                        percentage_trans = np.concatenate(
+                            [percentage_trans, np.zeros(kmeans_nb_cluster - percentage_trans.shape[0])])
+                    transition[index_patient, i, :] = percentage_trans / len(data)
+            transition = np.array(transition)
+            np.save(path_saving + "/" + str(nb_rand) + "_transition.npy", transition)
+            histograms_patient = np.array(histograms_patient)
+            np.save(path_saving + "/" + str(nb_rand) + "_histograms_patient.npy", histograms_patient)
+            histograms_region = np.array(histograms_region)
+            np.save(path_saving + "/" + str(nb_rand) + "_histograms_region.npy", histograms_region)
+            cluster_patient_data = np.array(cluster_patient_data)
+            np.save(path_saving + "/" + str(nb_rand) + "_cluster_patient_data.npy", cluster_patient_data)
+        else:
+            transition = np.load(path_saving + "/" + str(nb_rand) + "_transition.npy")
+            histograms_patient = np.load(path_saving + "/" + str(nb_rand) + "_histograms_patient.npy")
+            histograms_region = np.load(path_saving + "/" + str(nb_rand) + "_histograms_region.npy")
+            cluster_patient_data = np.load(path_saving + "/" + str(nb_rand) + "_cluster_patient_data.npy",
+                                           allow_pickle=True)
+
+        if plot:
+            plt.subplots(1, 1, figsize=(20, 10))
+            plt.imshow(histograms_region / histograms_region.max(axis=0).reshape(1, nb_regions))
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'vector_cluster.pdf')
+                plt.close('all')
+
+            for index_patient, cluster_k in enumerate(cluster_patient_data):
+                fig, axs = plt.subplots(1, 2, figsize=(20, 10))
+                fig.suptitle('patient :' + str(index_patient))
+                axs[0].hist(cluster_k, bins=kmeans_nb_cluster, range=(0, kmeans_nb_cluster), linewidth=0.5,
+                            edgecolor="black")
+                im_1 = axs[1].imshow(transition[index_patient])
+                for (j, i), label in np.ndenumerate(transition[index_patient]):
+                    axs[1].text(i, j, np.around(label, 4), ha='center', va='center')
+                axs[1].autoscale(False)
+                fig.colorbar(im_1, ax=axs[1])
+                if plot_save:
+                    plt.savefig(path_saving + '/figure/' + str(nb_rand) + '_' + str(index_patient) + '.pdf')
+                    plt.close('all')
+
+            nb_x = int(np.sqrt(len(avalanches_bin))) + 1
+            nb_y = int(len(avalanches_bin) / np.sqrt(len(avalanches_bin)))
+            fig, axs = plt.subplots(nb_x, nb_y, figsize=(10, 20))
+            for index_patient, cluster_k in enumerate(cluster_patient_data):
+                im = axs[int(index_patient % nb_x), int(index_patient / nb_x)].imshow(transition[index_patient])
+                axs[int(index_patient % nb_x), int(index_patient / nb_x)].set_title('patient : ' + str(index_patient))
+                axs[int(index_patient % nb_x), int(index_patient / nb_x)].autoscale(False)
+                fig.colorbar(im, ax=axs[int(index_patient % nb_x), int(index_patient / nb_x)])
+            for index_no_patient in range(len(cluster_patient_data), nb_x * nb_y):
+                axs[int(index_no_patient % nb_x), int(index_no_patient / nb_x)].imshow(
+                    np.ones_like(transition[0]) * np.NAN)
+                axs[int(index_no_patient % nb_x), int(index_no_patient / nb_x)].autoscale(False)
+            plt.subplots_adjust(left=0.0, right=0.97, wspace=0.3, top=0.94, bottom=0.03, hspace=0.3)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'transition.pdf')
+                plt.close('all')
+
+            fig, axs = plt.subplots(nb_x, nb_y, figsize=(10, 20))
+            for index_patient, cluster_k in enumerate(cluster_patient_data):
+                transition_patient = transition[index_patient]
+                np.fill_diagonal(transition_patient, 0.)
+                im = axs[int(index_patient % nb_x), int(index_patient / nb_x)].imshow(transition_patient)
+                axs[int(index_patient % nb_x), int(index_patient / nb_x)].set_title('patient : ' + str(index_patient))
+                axs[int(index_patient % nb_x), int(index_patient / nb_x)].autoscale(False)
+                fig.colorbar(im, ax=axs[int(index_patient % nb_x), int(index_patient / nb_x)])
+            for index_no_patient in range(len(cluster_patient_data), nb_x * nb_y):
+                axs[int(index_no_patient % nb_x), int(index_no_patient / nb_x)].imshow(
+                    np.ones_like(transition[0]) * np.NAN)
+                axs[int(index_no_patient % nb_x), int(index_no_patient / nb_x)].autoscale(False)
+            plt.subplots_adjust(left=0.0, right=0.97, wspace=0.3, top=0.94, bottom=0.03, hspace=0.3)
+            if plot_save:
+                plt.savefig(path_saving + '/figure/' + str(nb_rand) + 'transition_no_diag.pdf')
+                plt.close('all')
+
+        if plot and not plot_save:
+            plt.show()
+
+
 if __name__ == '__main__':
     null_model_cluster_regions(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
                                plot_save=True, nb_randomize=10000)
@@ -374,6 +569,12 @@ if __name__ == '__main__':
     null_model_transition_all(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
                               plot_save=True)
     null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/", avalanches_path=None,
+                    PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
+                    PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=1,
+                    kmeans_nb_cluster=7, kmeans_seed=123, plot=True, plot_save=True,
+                    update_Phate=False, update_transition=False,
+                    nb_randomize=100, seed=123)
+    sanitary_check_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/", avalanches_path=None,
                     PHATE_n_pca=5, PHATE_knn=5, PHATE_decay=1.0, PHATE_knn_dist='cosine',
                     PHATE_gamma=-1.0, PHATE_mds_dist='cosine', PHATE_n_components=3, PHATE_n_jobs=1,
                     kmeans_nb_cluster=7, kmeans_seed=123, plot=True, plot_save=True,
