@@ -208,6 +208,41 @@ def plot_figure_2D_patient(data, title, avalanches):
         begin = end
 
 
+def plot_figure_3D_patient(data, title, avalanches):
+    """
+    plot 2D time series with gradient following times
+    :param data: data
+    :param avalanches: avalanches times
+    :param title: title of the figure
+    :return:
+    """
+    fig = plt.figure(figsize=(9, 5))
+    plt.title(title)
+    plt.axis('off')
+    ax_1 = fig.add_subplot(231)
+    ax_1.set_title('time')
+    ax_2 = fig.add_subplot(232)
+    ax_2.set_title('time')
+    ax_3 = fig.add_subplot(233)
+    ax_3.set_title('time')
+    ax_4 = fig.add_subplot(234)
+    ax_4.set_title('cluster')
+    ax_5 = fig.add_subplot(235)
+    ax_5.set_title('cluster')
+    ax_6 = fig.add_subplot(236)
+    ax_6.set_title('cluster')
+    begin = 0
+    for index, avalanche in enumerate(avalanches):
+        end = begin + len(avalanche)
+        ax_1.scatter(data[begin:end, 0], data[begin:end, 1], c=np.arange(len(avalanche)), s=0.1)
+        ax_2.scatter(data[begin:end, 1], data[begin:end, 2], c=np.arange(len(avalanche)), s=0.1)
+        ax_3.scatter(data[begin:end, 0], data[begin:end, 2], c=np.arange(len(avalanche)), s=0.1)
+        ax_4.scatter(data[begin:end, 0], data[begin:end, 1], c=list(cnames.values())[index], s=0.1)
+        ax_5.scatter(data[begin:end, 1], data[begin:end, 2], c=list(cnames.values())[index], s=0.1)
+        ax_6.scatter(data[begin:end, 0], data[begin:end, 2], c=list(cnames.values())[index], s=0.1)
+        begin = end
+
+
 def plot_figure_2D(data, title, cluster_point):
     """
     plot 2D time series with gradient color
