@@ -1,12 +1,8 @@
-import os
-import numpy as np
 import json
 import phate
 from sklearn.cluster import KMeans
 from scipy import stats
 import matplotlib.pyplot as plt
-
-from pipeline_phate_clustering.functions_helper.load_data import go_avalanches
 from pipeline_phate_clustering.functions_helper.plot import plot_figure_2D, plot_figure_2D_patient, \
     plot_figure_2D_patient_unique, plot_figure_2D_patient_unique_time, plot_figure_2D_3D
 
@@ -239,7 +235,7 @@ if __name__=='__main__':
     import numpy as np
 
     # Preparation data for the pipeline
-    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../data/'
     f = h5py.File(path_data + 'serie_Melbourne.mat', 'r')
     struArray = f['D']
     data = {}
@@ -253,7 +249,7 @@ if __name__=='__main__':
     # remove suject 11,15,20
     selected_subjects = ['43', '39', '38', '35', '34', '29', '26', '21', '20', '19', '18', '17', '15', '13', '9', '8', '6', '5']
 
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/data_normalized_euclidiean/"
+    path_saving = path_data + "/../paper/result/no_avalanche/data_normalized_euclidiean/"
     pipeline_no_avalanche(path_saving, data, selected_subjects,
                           normalized_data=True,
                           PHATE_n_pca=6, PHATE_knn=10, PHATE_decay=100.0, PHATE_knn_dist='euclidean',
@@ -262,7 +258,7 @@ if __name__=='__main__':
                           update_avalanches=True, update_Phate=True, update_transition=True,
                           save_for_matlab=True, plot=True, plot_save=True)
 
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/data_normalized_euclidean_2/"
+    path_saving = path_data + "/../paper/result/no_avalanche/data_normalized_euclidean_2/"
     pipeline_no_avalanche(path_saving, data, selected_subjects,
                           normalized_data=True,
                           PHATE_n_pca=6, PHATE_knn=50, PHATE_decay=35.0, PHATE_knn_dist='euclidean',
@@ -271,7 +267,7 @@ if __name__=='__main__':
                           update_avalanches=True, update_Phate=True, update_transition=True,
                           save_for_matlab=True, plot=True, plot_save=True)
 
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/data_normalized_euclidean_cosine/"
+    path_saving = path_data + "/../paper/result/no_avalanche/data_normalized_euclidean_cosine/"
     pipeline_no_avalanche(path_saving, data, selected_subjects,
                           normalized_data=True,
                           PHATE_n_pca=6, PHATE_knn=50, PHATE_decay=35.0, PHATE_knn_dist='euclidean',
@@ -280,7 +276,7 @@ if __name__=='__main__':
                           update_avalanches=True, update_Phate=True, update_transition=True,
                           save_for_matlab=True, plot=True, plot_save=True)
 
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/data_euclidean/"
+    path_saving = path_data + "/../paper/result/no_avalanche/data_euclidean/"
     pipeline_no_avalanche(path_saving, data, selected_subjects,
                           normalized_data=False,
                           PHATE_n_pca=6, PHATE_knn=10, PHATE_decay=1e16, PHATE_knn_dist='euclidean',

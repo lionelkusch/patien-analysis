@@ -1,5 +1,3 @@
-import os
-import numpy as np
 import json
 import phate
 from sklearn.cluster import KMeans
@@ -273,7 +271,7 @@ if __name__ == '__main__':
     import numpy as np
 
     # Preparation data for the pipeline
-    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../data/'
     f = h5py.File(path_data + 'serie_Melbourne.mat', 'r')
     struArray = f['D']
     data = {}
@@ -286,7 +284,7 @@ if __name__ == '__main__':
 
     # remove suject 11,15,20
     selected_subjects = ['43', '39', '38', '35', '34', '29', '26', '21', '20', '19', '18', '17', '15', '13', '9', '8', '6', '5']
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/avalanches/"
+    path_saving = path_data + "/../paper/result/no_avalanche/avalanches/"
     pipeline_avalanches(path_saving, data, selected_subjects,
                           avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1,
                           PHATE_n_pca=5, PHATE_knn=2000, PHATE_decay=100., PHATE_knn_dist='cosine',
@@ -295,7 +293,7 @@ if __name__ == '__main__':
                           update_avalanches=False, update_Phate=False, update_transition=False,
                           save_for_matlab=False, plot=True, plot_save=True)
 
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/avalanches_2/"
+    path_saving = path_data + "/../paper/result/no_avalanche/avalanches_2/"
     pipeline_avalanches(path_saving, data, selected_subjects,
                         avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1,
                         PHATE_n_pca=5, PHATE_knn=10, PHATE_decay=100, PHATE_knn_dist='euclidean',
@@ -304,7 +302,7 @@ if __name__ == '__main__':
                         update_avalanches=False, update_Phate=False, update_transition=False,
                         save_for_matlab=False, plot=True, plot_save=True)
 
-    path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/no_avalanche/avalanches_3/"
+    path_saving = path_data + "/../paper/result/no_avalanche/avalanches_3/"
     pipeline_avalanches(path_saving, data, selected_subjects,
                           avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1,
                           PHATE_n_pca=5, PHATE_knn=10, PHATE_decay=100, PHATE_knn_dist='cosine',
