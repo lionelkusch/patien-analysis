@@ -4,7 +4,7 @@ import numpy as np
 from pipeline_phate_clustering.pipeline import pipeline
 
 # Preparation data for the pipeline
-path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../data/'
 f = h5py.File(path_data + 'serie_Melbourne.mat', 'r')
 struArray = f['D']
 data = {}
@@ -17,7 +17,7 @@ for i in range(Nsubs):
 
 # remove suject 11,15,20
 selected_subjects = ['43', '39', '38', '35', '34', '29', '26', '21', '20', '19', '18', '17', '15', '13', '9', '8', '6', '5']
-path_saving_root = "/home/kusch/Documents/project/patient_analyse/paper/result/sensibility_analysis/"
+path_saving_root = path_data+"/../paper/result/sensibility_analysis/"
 
 # range of parameters:
 range_PHATE_knn = [4, 5, 2, 3, 6, 7, 10]

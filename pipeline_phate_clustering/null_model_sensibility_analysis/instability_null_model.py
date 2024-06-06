@@ -320,10 +320,10 @@ def null_model_diagonal_phate(path_saving, path_data, max_nb_cluster=15, kmeans_
 
 
 if __name__ == '__main__':
-    null_model_diagonal(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+    null_model_diagonal(path_saving="/paper/result/default/",
                         plot_save=True)
-    null_model_diagonal_phate(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                              path_data="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
+    null_model_diagonal_phate(path_saving="/paper/result/default/",
+                              path_data="/paper/result/default/null_model/",
                               plot_save=True,
                               significant=0.05  #0.2
                               )

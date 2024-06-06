@@ -572,26 +572,28 @@ def null_model_sanitary_check(path_saving, path_saving_patient, nb_randomize=100
 
 
 if __name__ == '__main__':
-    null_model_cluster_regions_res(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+    import os
+    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../'
+    null_model_cluster_regions_res(path_saving=path_data+"/paper/result/default/",
                                    plot=True, significatif=0.05 / (90 * 7),
                                    # precision/(number of region * number of cluster)
                                    save_mat=True, nb_randomize=10000)
-    null_model_transition(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+    null_model_transition(path_saving=path_data+"/paper/result/default/",
                           plot=True)
-    null_model_transition_order(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                          plot=True)
-    null_model_transition_all(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+    null_model_transition_order(path_saving=path_data+"/paper/result/default/",
+                                plot=True)
+    null_model_transition_all(path_saving=path_data+"/paper/result/default/",
                               plot=True)
-    null_model_data(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
-                    path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+    null_model_data(path_saving=path_data+"/paper/result/default/null_model/",
+                    path_saving_patient=path_data+"/paper/result/default/",
                     plot=True, save_mat=True,
                     significatif=0.05  # 0.2
                     )
     null_model_data_entropy(
-        path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/null_model/",
-        path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
+        path_saving=path_data+"/paper/result/default/null_model/",
+        path_saving_patient=path_data+"/paper/result/default/",
         plot=True)
-    null_model_sanitary_check(path_saving="/home/kusch/Documents/project/patient_analyse/paper/result/default/sanitary_check/",
-                    path_saving_patient="/home/kusch/Documents/project/patient_analyse/paper/result/default/",
-                    plot=True,
-                    )
+    null_model_sanitary_check(path_saving=path_data+"/paper/result/default/sanitary_check/",
+                              path_saving_patient=path_data+"/paper/result/default/",
+                              plot=True,
+                              )

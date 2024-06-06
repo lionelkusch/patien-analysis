@@ -172,15 +172,16 @@ def plot_cluster_all_gap_statistic(path_saving_root, path_data_root, range_PHATE
 
 if __name__ == "__main__":
     import os
-    path_data_default = "/home/kusch/Documents/project/patient_analyse/paper/result/default/"
-    path_saving_default = "/home/kusch/Documents/project/patient_analyse/paper/result/cluster_measure/default/"
+    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../'
+    path_data_default = path_data+"/paper/result/default/"
+    path_saving_default = path_data+"/paper/result/cluster_measure/default/"
     range_n_clusters = np.arange(2, 15, 1)
     kmeans_seed = 123
     range_kmeans_seed = [123]  # np.arange(123, 133, 1)
     nrefs = 100
 
-    path_data_root = "/home/kusch/Documents/project/patient_analyse/paper/result/sensibility_analysis/"
-    path_saving_root = "/home/kusch/Documents/project/patient_analyse/paper/result/cluster_measure/sensibility_analysis/"
+    path_data_root = path_data+"/paper/result/sensibility_analysis/"
+    path_saving_root = path_data+"/paper/result/cluster_measure/sensibility_analysis/"
 
     range_PHATE_knn = [2, 3, 4, 5, 6, 7, 10]
     range_PHATE_decay = [0.1, 1.0, 10.0, 100.0]
