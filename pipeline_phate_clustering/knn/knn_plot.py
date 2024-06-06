@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-path_data = os.path.dirname(os.path.realpath(__file__)) + '/../paper/result/PCA/'
+path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../paper/result/PCA/'
 
 # get data of distance by neighbours (version 1)
 result_avalanches_pattern = np.load(path_data+'/avalanches_pattern/distance_max.npy')

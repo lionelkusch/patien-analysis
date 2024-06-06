@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 import h5py
 
 # Preparation data
-path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../data/'
 f = h5py.File(path_data + 'serie_Melbourne.mat', 'r')
 struArray = f['D']
 patients_data = {}
@@ -13,7 +13,6 @@ Nsubs = 44
 nregions = 90
 for i in range(Nsubs):
     patients_data['%d' % i] = np.swapaxes(f[struArray[i, 0]][:nregions, :], 0, 1)
-path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 selected_subjects = ['43', '39', '38', '35', '34', '29', '26', '21', '20', '19', '18', '17', '15', '13', '9', '8', '6',
                      '5']
 # get data

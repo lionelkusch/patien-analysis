@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 
 # from select_data import get_data_selected_patient_1
 # avalanches_bin, avalanches_sum, out, out_sum = get_data_selected_patient_1()
-path_data = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../data/'
 avalanches_bin = np.load(path_data+'/avalanches_selected_patient.npy', allow_pickle=True)
 
 results_all=[]
