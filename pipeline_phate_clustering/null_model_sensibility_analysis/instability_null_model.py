@@ -79,53 +79,55 @@ def null_model_diagonal(path_saving, max_nb_cluster=15, kmeans_seed=123, nb_subj
     # function for compute the pvalue
     pvalue_function = lambda randomize, data: np.sum(np.array(randomize > data), axis=0) / nb_randomize
     index_of_cluster_nb = list(range(2, max_nb_cluster))
-    pvalues = []
-    for kmeans_nb_cluster in index_of_cluster_nb:
-        print(kmeans_nb_cluster)
-        # get the percentage that the diagonal element has the higher transition  probability
-        per_diagonal = lambda transition: np.sum(
-            np.argmax(transition, axis=0) == range(kmeans_nb_cluster)) / kmeans_nb_cluster
-        # get the transition for the data
-        (default_transition, default_cluster_patient_data), \
-        (default_transition_all, default_cluster_all) = \
-            get_transition(kmeans_nb_cluster, kmeans_seed, nb_subject, avalanches_bin=avalanches_bin, Y_phate=Y_phate, )
-        result_default_per_diag = [per_diagonal(transition) for transition in default_transition]
-        result_default_per_diag_all = per_diagonal(default_transition_all)
+    # pvalues = []
+    # for kmeans_nb_cluster in index_of_cluster_nb:
+    #     print(kmeans_nb_cluster)
+    #     # get the percentage that the diagonal element has the higher transition  probability
+    #     per_diagonal = lambda transition: np.sum(
+    #         np.argmax(transition, axis=0) == range(kmeans_nb_cluster)) / kmeans_nb_cluster
+    #     # get the transition for the data
+    #     (default_transition, default_cluster_patient_data), \
+    #     (default_transition_all, default_cluster_all) = \
+    #         get_transition(kmeans_nb_cluster, kmeans_seed, nb_subject, avalanches_bin=avalanches_bin, Y_phate=Y_phate, )
+    #     result_default_per_diag = [per_diagonal(transition) for transition in default_transition]
+    #     result_default_per_diag_all = per_diagonal(default_transition_all)
+    #
+    #     # generate a null model by shuffling the label of each avalanches
+    #     rng = np.random.default_rng(seed=seed)
+    #     shuffle_cluster = np.copy(np.array(default_cluster_patient_data, dtype=object))
+    #     shuffle_per_diagonal = []
+    #     shuffle_transition, shuffle_cluster_patient_data, shuffle_transition_all, shuffle_cluster_all = [], [], [], []
+    #     for nb_rand in range(nb_randomize):
+    #         for i in range(shuffle_cluster.shape[0]):
+    #             rng.shuffle(shuffle_cluster[i])
+    #         (transition_patient, cluster_patient_data), \
+    #         (transition_all, cluster_all) = \
+    #             get_transition(kmeans_nb_cluster, kmeans_seed, nb_subject, cluster_patient_data=shuffle_cluster)
+    #         result_per_diag = [per_diagonal(transition) for transition in transition_patient]
+    #         result_per_diag.append(per_diagonal(transition_all))
+    #         shuffle_per_diagonal.append(result_per_diag)
+    #         shuffle_transition.append(transition_patient)
+    #         shuffle_cluster_patient_data.append(cluster_patient_data)
+    #         shuffle_transition_all.append(transition_all)
+    #         shuffle_cluster_all.append(cluster_all)
+    #     # put the result in dictionary
+    #     shuffle_per_diagonal = np.array(shuffle_per_diagonal)
+    #     shuffle_per_diagonal_all = shuffle_per_diagonal[:, -1]
+    #     shuffle_per_diagonal = shuffle_per_diagonal[:, :-1]
+    #     pvalue_per_diag = pvalue_function(shuffle_per_diagonal, result_default_per_diag)
+    #     pvalue_per_diag_all = pvalue_function(shuffle_per_diagonal_all, result_default_per_diag_all)
+    #     pvalue_per_transition = pvalue_function(shuffle_transition, default_transition)
+    #     pvalue_per_transition_all = pvalue_function(shuffle_transition_all, default_transition_all)
+    #     pvalues.append(
+    #         {'nb_cluster': kmeans_nb_cluster,
+    #          'data_per_diagonal': result_default_per_diag, 'data_per_diagonal_all': result_default_per_diag_all,
+    #          'shuffle_per_diagonal': shuffle_per_diagonal, 'shuffle_per_diagonal_all': shuffle_per_diagonal_all,
+    #          'per_diag': pvalue_per_diag, 'per_diag_all': pvalue_per_diag_all,
+    #          'transition': pvalue_per_transition, 'transition_all': pvalue_per_transition_all,
+    #          })
 
-        # generate a null model by shuffling the label of each avalanches
-        rng = np.random.default_rng(seed=seed)
-        shuffle_cluster = np.copy(np.array(default_cluster_patient_data, dtype=object))
-        shuffle_per_diagonal = []
-        shuffle_transition, shuffle_cluster_patient_data, shuffle_transition_all, shuffle_cluster_all = [], [], [], []
-        for nb_rand in range(nb_randomize):
-            for i in range(shuffle_cluster.shape[0]):
-                rng.shuffle(shuffle_cluster[i])
-            (transition_patient, cluster_patient_data), \
-            (transition_all, cluster_all) = \
-                get_transition(kmeans_nb_cluster, kmeans_seed, nb_subject, cluster_patient_data=shuffle_cluster)
-            result_per_diag = [per_diagonal(transition) for transition in transition_patient]
-            result_per_diag.append(per_diagonal(transition_all))
-            shuffle_per_diagonal.append(result_per_diag)
-            shuffle_transition.append(transition_patient)
-            shuffle_cluster_patient_data.append(cluster_patient_data)
-            shuffle_transition_all.append(transition_all)
-            shuffle_cluster_all.append(cluster_all)
-        # put the result in dictionary
-        shuffle_per_diagonal = np.array(shuffle_per_diagonal)
-        shuffle_per_diagonal_all = shuffle_per_diagonal[:, -1]
-        shuffle_per_diagonal = shuffle_per_diagonal[:, :-1]
-        pvalue_per_diag = pvalue_function(shuffle_per_diagonal, result_default_per_diag)
-        pvalue_per_diag_all = pvalue_function(shuffle_per_diagonal_all, result_default_per_diag_all)
-        pvalue_per_transition = pvalue_function(shuffle_transition, default_transition)
-        pvalue_per_transition_all = pvalue_function(shuffle_transition_all, default_transition_all)
-        pvalues.append(
-            {'nb_cluster': kmeans_nb_cluster,
-             'data_per_diagonal': result_default_per_diag, 'data_per_diagonal_all': result_default_per_diag_all,
-             'shuffle_per_diagonal': shuffle_per_diagonal, 'shuffle_per_diagonal_all': shuffle_per_diagonal_all,
-             'per_diag': pvalue_per_diag, 'per_diag_all': pvalue_per_diag_all,
-             'transition': pvalue_per_transition, 'transition_all': pvalue_per_transition_all,
-             })
-
+    # np.save(path_saving + 'model_diagonal.npy', pvalues)
+    pvalues = np.load(path_saving + 'model_diagonal.npy', allow_pickle=True)
     # plot the evolution of percentage of diagonal
     per_diag = [pvalue['data_per_diagonal_all'] for pvalue in pvalues]
     per_diag_rand = np.array([pvalue['shuffle_per_diagonal_all'] for pvalue in pvalues])
@@ -170,6 +172,10 @@ def null_model_diagonal(path_saving, max_nb_cluster=15, kmeans_seed=123, nb_subj
         no_diag_per_lows.append(np.sum(percentage < significant)/total)
         no_diag_per_highs.append(np.sum(percentage > 1-significant)/total)
         no_diag_per_nos.append(1.0-(np.sum(percentage < significant) + np.sum(percentage > 1-significant))/total)
+
+    np.save(path_saving + 'model_diagonalsignificatif.npy',
+            np.array([diag_per_lows, diag_per_nos, diag_per_highs,
+                                         no_diag_per_lows, no_diag_per_nos, no_diag_per_highs]))
     # plot result
     plt.figure()
     for index, data in enumerate(np.array([diag_per_lows, diag_per_nos, diag_per_highs,
@@ -256,6 +262,7 @@ def null_model_diagonal_phate(path_saving, path_data, max_nb_cluster=15, kmeans_
              'per_diag': pvalue_per_diag, 'per_diag_all': pvalue_per_diag_all,
              'transition': pvalue_per_transition, 'transition_all': pvalue_per_transition_all,
              })
+    np.save(path_saving + 'model_diagonal_phate.npy', pvalues)
 
     # plot evolution of percentage of diagonal
     per_diag = [pvalue['data_per_diagonal_all'] for pvalue in pvalues]
@@ -301,6 +308,10 @@ def null_model_diagonal_phate(path_saving, path_data, max_nb_cluster=15, kmeans_
         no_diag_per_lows.append(np.sum(percentage < significant)/total)
         no_diag_per_highs.append(np.sum(percentage > 1-significant)/total)
         no_diag_per_nos.append(1.0-(np.sum(percentage < significant) + np.sum(percentage > 1-significant))/total)
+
+    np.save(path_saving + 'model_diagonalsignificatif_phate.npy',
+            np.array([diag_per_lows, diag_per_nos, diag_per_highs,
+                                         no_diag_per_lows, no_diag_per_nos, no_diag_per_highs]))
     # plot result
     plt.figure()
     for index, data in enumerate(np.array([diag_per_lows, diag_per_nos, diag_per_highs,
@@ -320,10 +331,12 @@ def null_model_diagonal_phate(path_saving, path_data, max_nb_cluster=15, kmeans_
 
 
 if __name__ == '__main__':
-    null_model_diagonal(path_saving="/paper/result/default/",
+    import os
+    path_data = os.path.dirname(os.path.realpath(__file__)) + '/../../'
+    null_model_diagonal(path_saving=path_data+"/paper/result/default/",
                         plot_save=True)
-    null_model_diagonal_phate(path_saving="/paper/result/default/",
-                              path_data="/paper/result/default/null_model/",
+    null_model_diagonal_phate(path_saving=path_data+"/paper/result/default/",
+                              path_data=path_data+"/paper/result/default/null_model/",
                               plot_save=True,
                               significant=0.05  #0.2
                               )

@@ -269,15 +269,11 @@ def null_model_transition_all(path_saving, nb_randomize=100, significatif=0.05, 
     :return:
     """
     # load value
-    data_null_model = {'transition': [],
-                       'histogram': [],
-                       'cluster_patient': []
-                       }
+    data_null_model = {'transition': []}
     for nb_rand in range(nb_randomize):
         data_null_model['transition'].append(np.load(path_saving + "/transition_all" + str(nb_rand) + ".npy"))
 
-    data_patient = {'transition': np.load(path_saving + "/transition_all.npy"),
-                    }
+    data_patient = {'transition': np.load(path_saving + "/transition_all.npy")}
     pvalue = np.sum(np.array(data_null_model['transition']) > data_patient['transition'], axis=0) / nb_randomize
     pvalue = np.expand_dims(pvalue, axis=0)
     significatif_high = pvalue > 1.0 - significatif
