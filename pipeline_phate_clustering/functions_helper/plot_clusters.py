@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import os
 
-path = "/home/kusch/Documents/project/patient_analyse/paper/result/default/figure/"
+path = os.path.dirname(os.path.realpath(__file__)) + "/../../paper/result/default/figure/"
 nb_clusters = range(2, 15)
 fig, axs = plt.subplots(len(nb_clusters), max(nb_clusters), figsize=(20, 20),
                         gridspec_kw={'left': 0.01, 'bottom': 0.01, 'right': 0.99, 'top': 0.99, 'wspace': 0.01,
