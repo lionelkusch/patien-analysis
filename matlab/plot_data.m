@@ -10,7 +10,7 @@ if ~exist('plot','var'), plot=false; end
 display(colour_range);
 
 %% get AAL labels
-[aalID, aalind,fullnames,everyID,allnames] = aal_get_numbers( 'Precentral_L' );
+[aalID, aalind, fullnames, everyID, allnames] = aal_get_numbers( 'Precentral_L' );
         tmplabels = char(allnames);
         cfg.allnames=tmplabels;
         
