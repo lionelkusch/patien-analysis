@@ -6,3 +6,4 @@ matlab/library
 matlab/sequence_by_patient.mat
 venv
 projection_data/
+figures_paper/*/figure

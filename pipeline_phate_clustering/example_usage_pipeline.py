@@ -17,7 +17,7 @@ for i in range(Nsubs):
 
 # remove suject 11,15,20
 selected_subjects = ['43', '39', '38', '35', '34', '29', '26', '21', '20', '19', '18', '17', '15', '13', '9', '8', '6', '5']
-path_saving = "/home/kusch/Documents/project/patient_analyse/paper/result/default/"
+path_saving = path_data + "/../paper/result/default/"
 
 pipeline(path_saving, data, selected_subjects,
              avalanches_threshold=3, avalanches_direction=0, avalanches_binsize=1,
