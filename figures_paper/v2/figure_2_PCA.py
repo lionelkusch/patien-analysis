@@ -4,8 +4,9 @@ import numpy as np
 from scipy import stats
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
 from pipeline_phate_clustering.functions_helper.load_data import go_avalanches
+from helper_function import add_arrows
+from matplotlib.gridspec import GridSpec
 
 
 label_size = 12.0
@@ -68,14 +69,15 @@ PCA_fit_data_avalanche = PCA(n_components=pca_choice).fit_transform(np.concatena
 print('process PCA avalanche pattern')
 PCA_fit_data_avalanche_pattern = PCA(n_components=pca_choice).fit_transform(np.concatenate(data_avalanches_bin))
 
-letter = ['E', 'F', 'G', 'H', 'I']
+letter = ['A', 'B', 'C', 'D', 'E']
 
-fig = plt.figure(figsize=(4.4, 3.6))
-for index_data, (PCA_fit, data_subject, index_ax) in enumerate([(PCA_fit_data_subject, data_subjects, 1),
-                                                              (PCA_fit_data_zscore, data_zscore, 3),
-                                                              (PCA_fit_data_avalanche, data_avalanches, 9),
-                                                              (PCA_fit_data_avalanche_pattern, data_avalanches_bin, 11)]):
-    ax1 = plt.subplot(4, 4, index_ax)
+fig = plt.figure(figsize=(6.8, 3.4))
+gs_1 = GridSpec(2, 8, figure=fig, width_ratios=[1., 1., 0.1, 1., 1., 0.1, 1., 1.])
+for index_data, (PCA_fit, data_subject, index_ax, title, x_position_title) in enumerate([
+    (PCA_fit_data_zscore, data_zscore, 1, 'Normalized data', 0.04),
+    (PCA_fit_data_avalanche, data_avalanches, 3, 'Avalanches', 0.45),
+    (PCA_fit_data_avalanche_pattern, data_avalanches_bin, 5, 'Avalanche patterns', 0.7)]):
+    ax1 = fig.add_subplot(gs_1[0, index_data*3])
     patient_time = []
     begin = 0
     for index, data in enumerate(data_subject):
@@ -83,30 +85,31 @@ for index_data, (PCA_fit, data_subject, index_ax) in enumerate([(PCA_fit_data_su
         ax1.scatter(PCA_fit[begin:end, 0], PCA_fit[begin:end, 1], c=np.arange(len(data)), s=0.8)
         patient_time.append((begin, end))
         begin = end
-    if axis_show:
-        ax1.set_ylabel('PCA 2', {"fontsize": label_size}, labelpad=0)
-        ax1.set_xlabel('PCA 1', {"fontsize": label_size}, labelpad=0)
-        ax1.tick_params(axis='both', labelsize=tickfont_size)
-    else:
         ax1.axis('off')
-    ax1.annotate(letter[index_data], xy=(-0.0, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
-    for nb_ax, nb_patient in [(1, 0), (4, 1), (5, 2)]:
-        ax = plt.subplot(4, 4, index_ax + nb_ax)
-        ax.scatter(PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 0],
-                   PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 1],
-                   c=np.arange(patient_time[nb_patient][1]-patient_time[nb_patient][0]), s=0.8)
-        if axis_show:
-            ax.set_ylabel('PCA 2', {"fontsize": label_size}, labelpad=0)
-            ax.set_xlabel('PCA 1', {"fontsize": label_size}, labelpad=0)
-            ax.tick_params(axis='both', labelsize=tickfont_size)
-        else:
-            ax.axis('off')
+    ax1.annotate(title, xy=(x_position_title, 0.95), xycoords='figure fraction', fontsize=label_size, weight='bold')
+    ax1.annotate(letter[index_data], xy=(-0.27, 1.1), xycoords='axes fraction', weight='bold', fontsize=label_size)
+    ax1.set_title('pooled data')
+    for nb_ax_x, nb_ax_y, nb_patient in [(1, 0, 0), (0, 1, 1), (1, 1, 2)]:
+        ax = fig.add_subplot(gs_1[nb_ax_y, index_data*3+nb_ax_x])
+        scatter_plot = ax.scatter(PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 0],
+               PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 1],
+               c=np.arange(patient_time[nb_patient][1]-patient_time[nb_patient][0]), s=0.8)
+        ax.axis('off')
+        if nb_patient == 1:
+            add_arrows(PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 0],
+                       PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 1],
+                       ax, "PCA1", "PCA2")
+        ax.set_title('#'+str(nb_patient))
 
-if axis_show:
-    plt.subplots_adjust(left=0.15, top=0.94, bottom=0.012, right=0.99, hspace=1., wspace=1.)
-else:
-    fig.add_artist(mlines.Line2D([0.5, 0.5], [0.05, 0.95], color='black', lw=2))
-    fig.add_artist(mlines.Line2D([0.05, 0.95], [0.5, 0.5], color='black', lw=2))
-    plt.subplots_adjust(left=0.01, top=0.97, bottom=0.01, right=0.99, hspace=0.5)
-plt.savefig('figure/figure_1b_axis.png')
-# plt.show()
+ax = fig.add_axes([0.25, 0.08, 0.5, 0.02])
+colbar_time = fig.colorbar(scatter_plot, cax=ax, orientation='horizontal')
+colbar_time.ax.yaxis.tick_left()
+colbar_time.set_ticks([0, patient_time[2][1]-patient_time[2][0] - 1])
+colbar_time.set_ticklabels(['t=0', 't=end'])
+colbar_time.ax.xaxis.set_tick_params(pad=0.1, labelsize=tickfont_size)
+colbar_time.ax.set_xlabel('time evolution', {"fontsize": label_size}, labelpad=-7)
+
+plt.subplots_adjust(left=0.035, top=0.85, bottom=0.18, right=0.99, hspace=0.25)
+plt.savefig('figure/figure_2_pre.png')
+plt.savefig('figure/figure_2_pre.svg')
+plt.show()
