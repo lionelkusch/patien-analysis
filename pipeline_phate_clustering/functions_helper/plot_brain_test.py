@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_select=None):
+def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_select=None, cmap='viridis'):
     if region_select is not None:
         if data.shape[0] == region_select.shape[0]:
             data_tmp = np.ones(vertices.shape[0]) * np.NAN
@@ -26,7 +26,7 @@ def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_
 
     p = pv.Plotter(window_size=(400, 500), off_screen=True)
     p.set_background(color="white")
-    p.add_mesh(mesh)
+    p.add_mesh(mesh, cmap=cmap)
     p.view_xy()
     p.set_position([p.camera_position[0][0], p.camera_position[0][1], p.camera_position[0][2]-150])
     def my_cpos_callback_func(p1):
@@ -39,7 +39,7 @@ def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_
 
     p2 = pv.Plotter(window_size=(400, 500), off_screen=True)
     p2.set_background(color="white")
-    p2.add_mesh(mesh_left)
+    p2.add_mesh(mesh_left, cmap=cmap)
     p2.view_yz()
     p2.set_position([p2.camera_position[0][0]-100, p2.camera_position[0][1], p2.camera_position[0][2]])
     # p2.add_key_event("p", my_cpos_callback_func(p2))
@@ -48,7 +48,7 @@ def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_
 
     p3 = pv.Plotter(window_size=(400, 500), off_screen=True)
     p3.set_background(color="white")
-    p3.add_mesh(mesh_left)
+    p3.add_mesh(mesh_left, cmap=cmap)
     p3.view_yz(negative=True)
     p3.set_position([p3.camera_position[0][0], p3.camera_position[0][1], p3.camera_position[0][2]])
     # p3.add_key_event("p", my_cpos_callback_func(p3))
@@ -58,7 +58,7 @@ def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_
 
     p4 = pv.Plotter(window_size=(400, 500), off_screen=True)
     p4.set_background(color="white")
-    p4.add_mesh(mesh_right)
+    p4.add_mesh(mesh_right, cmap=cmap)
     p4.view_yz()
     p4.set_position([p4.camera_position[0][0]-100, p4.camera_position[0][1], p4.camera_position[0][2]])
     # p4.add_key_event("p", my_cpos_callback_func(p2))
@@ -67,7 +67,7 @@ def multiview_pyvista(axs, vertices, lhfaces, rhfaces, region_map, data, region_
 
     p5 = pv.Plotter(window_size=(400, 500), off_screen=True)
     p5.set_background(color="white")
-    p5.add_mesh(mesh_right)
+    p5.add_mesh(mesh_right, cmap=cmap)
     p5.view_yz(negative=True)
     p5.set_position([p5.camera_position[0][0], p5.camera_position[0][1], p5.camera_position[0][2]])
     # p5.add_key_event("p", my_cpos_callback_func(p5))
