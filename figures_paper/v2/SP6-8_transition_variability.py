@@ -74,7 +74,7 @@ plt.savefig('figure/SP_6_transition_all_variability.png')
 
 fig = plt.figure(figsize=(10, 8))
 ax1 = plt.subplot(4, 5, 1)
-im = ax1.imshow(all_significatif_all, cmap=cmap_red_blue)
+im = ax1.imshow(all_pvalue, vmin=significatif, vmax=1 - significatif, cmap=cmap_red_blue)
 ax1.grid()
 ax1.set_yticks(np.arange(7)+0.5)
 ax1.set_yticklabels([])
