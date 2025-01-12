@@ -13,6 +13,7 @@ from pipeline_phate_clustering.functions_helper.plot_brain_test import multiview
 from pipeline_phate_clustering.functions_helper.plot_brain import get_brain_mesh
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+plt.rcParams['svg.fonttype'] = 'none'
 
 label_size = 12.0
 tickfont_size = 10.0
@@ -68,6 +69,7 @@ for begin_avalanche, end_avalanche in zip(begin, end):
     else:
         avalanches.append(np.array(np.sum(data_avalanches_1[begin_avalanche:end_avalanche, :], axis=0) >= 1, dtype=int))
 avalanches = np.concatenate([avalanches])
+np.save('avalanches_example.npy',avalanches)
 
 # data from all subjects
 path = os.path.dirname(os.path.realpath(__file__)) + "/../../paper/result/default/"
