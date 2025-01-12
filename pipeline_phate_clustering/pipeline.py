@@ -225,7 +225,7 @@ def pipeline(path_saving, patients_data, selected_subjects,
                 plt.close('all')
 
         nb_x = int(np.sqrt(len(selected_subjects))) + 1
-        nb_y = int(len(selected_subjects) / np.sqrt(len(selected_subjects)))
+        nb_y = int(np.ceil(len(selected_subjects) / np.sqrt(len(selected_subjects))))
         fig, axs = plt.subplots(nb_x, nb_y, figsize=(10, 20))
         for index_patient, cluster_k in enumerate(cluster_patient_data):
             im = axs[int(index_patient % nb_x), int(index_patient / nb_x)].imshow(transition[index_patient])
