@@ -47,17 +47,17 @@ if __name__ == '__main__':
                                      'Phate cluster', 'Spectral cluster', 'cluster Phate - cluster spectral')
                 plt.savefig(path_spherical+'/figures/compare_cluster'+str(i)+'_phate.png')
 
-        # # all subject
-        # path_all = path_root + "/paper/result/all_subject_melbourne/"
-        # avalanches_bin_all = np.load(path_all + '/avalanches.npy', allow_pickle=True)
-        # histograms_region_all = np.load(path_all + "/histograms_region.npy")
-        # cluster_vector_all = histograms_region_all / histograms_region_all.max(axis=0).reshape(1, len(avalanches_bin_all[0][0]))
-        # order_all = np.argsort(np.sum(histograms_region_all, axis=1))
-        # cluster_vector_all = cluster_vector_all[order_all]
-        #
-        # plot_compare_cluster(cluster_vector_phate, order_phate, cluster_vector_all, order_all,
-        #                      'Phate cluster', 'all subject', 'cluster Phate - cluster all')
-        # plt.savefig(path_all+'/figure_compare/compare_cluster_phate.png')
+        # all subject
+        path_all = path_root + "/paper/result/all_subject_melbourne/"
+        avalanches_bin_all = np.load(path_all + '/avalanches.npy', allow_pickle=True)
+        histograms_region_all = np.load(path_all + "/histograms_region.npy")
+        cluster_vector_all = histograms_region_all / histograms_region_all.max(axis=0).reshape(1, len(avalanches_bin_all[0][0]))
+        order_all = np.argsort(np.sum(histograms_region_all, axis=1))
+        cluster_vector_all = cluster_vector_all[order_all]
+
+        plot_compare_cluster(cluster_vector_phate, order_phate, cluster_vector_all, order_all,
+                             'Phate cluster', 'all subject', 'cluster Phate - cluster all')
+        plt.savefig(path_all+'/figure_compare/compare_cluster_phate.png')
 
 
         # plt.show()
