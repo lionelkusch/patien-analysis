@@ -90,6 +90,8 @@ colbar.ax.set_ylabel('#cluster', {"fontsize": label_size}, labelpad=0)
 
 
 plt.subplots_adjust(left=0.04, right=0.92, top=0.99, bottom=0.07, hspace=0.1, wspace=0.1)
-plt.savefig('figure/figure_3_pre.png')
-plt.savefig('figure/figure_3_pre.svg')
+plt.savefig('figure_3/figure_3_pre.png')
+plt.savefig('figure_3/figure_3_pre.svg')
+plt.savefig('figure_3/figure_3_pre.eps')
+plt.savefig('figure_3/figure_3_pre.tiff', dpi=800)
 plt.show()

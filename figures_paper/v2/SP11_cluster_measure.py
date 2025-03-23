@@ -32,18 +32,20 @@ plt.figure(figsize=(10, 5))
 ax = plt.subplot(2, 3, 1)
 ax.plot(nb_clusters, elbow)
 ax.set_ylabel('elbow', {"fontsize": label_size})
+ax.set_xlabel('number of clusters', {"fontsize": label_size})
 plt.xticks([2, 5, 10, 15])
 
 ax = plt.subplot(2, 3, 2)
 ax.plot(nb_clusters, silhouette_avg)
-ax.set_xlabel('nb cluster', {"fontsize": label_size})
 ax.set_ylabel('average silhouette', {"fontsize": label_size})
 ax.set_title('PHATE', {"fontsize": label_size}, weight='bold')
+ax.set_xlabel('number of clusters', {"fontsize": label_size})
 plt.xticks([2, 5, 10, 15])
 
 ax = plt.subplot(2, 3, 3)
 ax.plot(nb_clusters, gap_stat_values)
 ax.set_ylabel('gap statistic', {"fontsize": label_size})
+ax.set_xlabel('number of clusters', {"fontsize": label_size})
 previous = 0.0
 for index, (nb_cluster, gap_stat_value) in enumerate(zip(nb_clusters, gap_stat_values)):
     # https://rpubs.com/Yoann/587951
@@ -64,11 +66,12 @@ for index, (nb_cluster, gap_stat_value) in enumerate(zip(nb_clusters, gap_stat_v
 ax = plt.subplot(2, 3, 4)
 ax.plot(pca_nb_clusters, pca_elbow)
 ax.set_ylabel('elbow', {"fontsize": label_size})
+ax.set_xlabel('number of clusters', {"fontsize": label_size})
 plt.xticks([2, 5, 10, 15])
 
 ax = plt.subplot(2, 3, 5)
 ax.plot(pca_nb_clusters, pca_silhouette_avg)
-ax.set_xlabel('nb cluster', {"fontsize": label_size})
+ax.set_xlabel('number of clusters', {"fontsize": label_size})
 ax.set_ylabel('average silhouette', {"fontsize": label_size})
 ax.set_title('PCA', {"fontsize": label_size}, weight='bold')
 plt.xticks([2, 5, 10, 15])
@@ -76,6 +79,7 @@ plt.xticks([2, 5, 10, 15])
 ax = plt.subplot(2, 3, 6)
 ax.plot(pca_nb_clusters, pca_gap_stat_values)
 ax.set_ylabel('gap statistic', {"fontsize": label_size})
+ax.set_xlabel('number of clusters', {"fontsize": label_size})
 pca_previous = 0.0
 for index, (pca_nb_cluster, pca_gap_stat_value) in enumerate(zip(pca_nb_clusters, pca_gap_stat_values)):
     # https://rpubs.com/Yoann/587951
@@ -93,5 +97,5 @@ for index, (pca_nb_cluster, pca_gap_stat_value) in enumerate(zip(pca_nb_clusters
     plt.xticks([2, 5, 10, 15])
 
 plt.subplots_adjust(left=0.08, right=0.99, top=0.95, bottom=0.09, wspace=0.32, hspace=0.4)
-# plt.show()
-plt.savefig('figure/SP_11_cluster_measure.png')
+plt.savefig('figure_3/SP_1_cluster_measure.png', dpi=600)
+plt.show()

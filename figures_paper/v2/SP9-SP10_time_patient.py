@@ -79,56 +79,59 @@ Y_phate_avalanches_euclidean = np.load(path_data + "/../paper/result/no_avalanch
 Y_phate_avalanches_pattern = np.load(path_data + "/../paper/result/default/Phate.npy")
 
 
-for index_data_set, (param, dataset) in enumerate([
-        ( [(9, 6), 0.09, 0.96, 0.915, 0.05, 0.6, 0.45, 'PCA'],
+for index_data_set, (param, dataset, name_axis) in enumerate([
+        ( [(9, 6), 0.09, 0.98, 0.915, 0.2, 0.6, 0.45, 'PCA'],
             [
-             ('PCA_normalized_data', 'PCA normalized data', PCA_fit_data_zscore, data_zscore),
+             ('PCA_normalized_data', 'PCA normalised data', PCA_fit_data_zscore, data_zscore),
              ('PCA_avalanches', 'PCA avalanches', PCA_fit_data_avalanche, data_avalanches),
-             ('PCA_avalanche_patterns', 'PCA avalanche patterns', PCA_fit_data_avalanche_pattern, data_avalanches_bin)]),
-        ([(9, 9), 0.09, 0.96, 0.93, 0.05, 0.85, 0.45, 'PHATE'],
+             ('PCA_avalanche_patterns', 'PCA avalanche patterns', PCA_fit_data_avalanche_pattern, data_avalanches_bin)],
+          ('PCA dimension 1', 'PCA dimension 2')),
+        ([(9, 9), 0.09, 0.98, 0.93, 0.2, 0.85, 0.45, 'PHATE'],
             [
-             ('PHATE_normalized_data', 'PHATE normalized data', Y_phate_data_normalized, data_zscore),
+             ('PHATE_normalized_data', 'PHATE normalised data', Y_phate_data_normalized, data_zscore),
              ('PHATE_avalanches', 'PHATE avalanches', Y_phate_avalanches, data_avalanches),
              ('PHATE_euclidean_avalanches', 'PHATE with euclidean measure of avalanches',
              Y_phate_avalanches_euclidean, data_avalanches),
-             ('PHATE_avalanche_patterns', 'PHATE avalanche patterns', Y_phate_avalanches_pattern, data_avalanches_bin)])
-            ]):
+             ('PHATE_avalanche_patterns', 'PHATE avalanche patterns', Y_phate_avalanches_pattern, data_avalanches_bin)],
+            ('PHATE dimension 1', 'PHATE dimension 2'))
+            ]
+         ):
     fig = plt.figure(figsize=param[0])
-    col_bars = []
     for index_data, (name_fig, name, data, data_patient_nb) in enumerate(dataset):
         print(int(np.ceil(len(dataset)/2)), index_data*2)
         ax_title = fig.add_subplot(int(np.ceil(len(dataset)/2)), 2, index_data+1)
-        ax_title.set_title(name, fontsize=label_size, pad=25, weight='bold')
+        ax_title.set_title(name, fontsize=label_size, pad=10, weight='bold')
         ax_title.axis('off')
         ax_1 = fig.add_subplot(int(np.ceil(len(dataset)/2)), 4, index_data*2+1)
-        ax_1.set_title('time evolution', {"fontsize": label_size}, pad=12)
-        if index_data % 2 == 0:
-            ax_1.annotate(letter[index_data], xy=(-0.15, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
-        else:
-            ax_1.annotate(letter[index_data], xy=(-0.3, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
+        # ax_1.set_title('time evolution', {"fontsize": label_size})
+        ax_1.set_xlabel(name_axis[0])
+        ax_1.set_ylabel(name_axis[1])
+        ax_1.annotate(letter[index_data], xy=(-0.45, 0.95), xycoords='axes fraction', weight='bold', fontsize=label_size)
         ax_2 = fig.add_subplot(int(np.ceil(len(dataset)/2)), 4, index_data*2+2)
-        ax_2.set_title('subject', {"fontsize": label_size}, pad=12)
+        # ax_2.set_title('subject', {"fontsize": label_size})
+        ax_2.set_xlabel(name_axis[0])
+        ax_2.set_ylabel(name_axis[1])
         begin = 0
         for index, avalanche in enumerate(data_patient_nb):
             end = begin + len(avalanche)
             time_axes = ax_1.scatter(data[begin:end, 0], data[begin:end, 1], c=np.arange(len(avalanche)), s=0.8)
             ax_2.scatter(data[begin:end, 0], data[begin:end, 1], c=list(cnames.values())[index], s=0.8)
             begin = end
-        if index_data % 2 == 0:
-            ax_1.yaxis.tick_right()
-            divider = make_axes_locatable(ax_1)
-            cax = divider.append_axes("left", size="5%", pad=0.2)
-            colbar_time = fig.colorbar(time_axes, cax=cax)
-            colbar_time.ax.yaxis.tick_left()
-            colbar_time.set_ticks([0, len(data_patient_nb[-1]) - 1])
-            colbar_time.set_ticklabels(['t=0', 't=end'])
-            col_bars.append(colbar_time)
-        if index_data % 2 == 1 or ((index_data % 2 == 0) and param[-1] == 'PCA'):
-            divider = make_axes_locatable(ax_2)
-            cax = divider.append_axes("right", size="5%", pad=0.05)
-            colbar = fig.colorbar(colorbar_patient, cax=cax)
-            colbar.set_ticks([0, 5, 10, 15, 18])
-            col_bars.append(colbar)
+
+    cax = fig.add_axes([0.1, 0.1, 0.30, 0.02])
+    colbar_time = fig.colorbar(time_axes, cax=cax, orientation='horizontal')
+    colbar_time.set_ticks([0, len(data_patient_nb[-1]) - 1])
+    colbar_time.set_ticklabels(['t = 0', r't$\approx$6 min'])
+    colbar_time.ax.set_xlabel('time scale')
+
+    cax = fig.add_axes([0.6, 0.1, 0.30, 0.02])
+    colbar = fig.colorbar(colorbar_patient, cax=cax, orientation='horizontal')
+    colbar.set_ticks([0, 5, 10, 15, 18])
+    colbar.ax.set_xlabel('subject')
+
     plt.subplots_adjust(left=param[1], right=param[2], top=param[3], bottom=param[4], wspace=param[5], hspace=param[6])
-    plt.savefig('figure/SP_'+str(9+index_data_set)+'_'+param[7]+'.png')
-# plt.show()
+    if index_data_set == 0:
+        plt.savefig('figure_3/SP_'+str(7)+'_'+param[7]+'.png', dpi=600)
+    elif index_data_set == 1:
+        plt.savefig('figure_3/SP_'+str(11)+'_'+param[7]+'.png', dpi=600)
+    plt.show()

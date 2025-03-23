@@ -118,6 +118,5 @@ ax.set_xticks([])
 ax.set_xlim(xmin=0, xmax=0.5)
 
 plt.subplots_adjust(top=0.96, bottom=0.05, left=0.05, right=0.98, wspace=0., hspace=0.)
-plt.savefig('figure/figure_SP16.png')
-plt.savefig('figure/figure_SP16.svg')
+plt.savefig('figure_3/SP_4.png', dpi=600)
 plt.show()

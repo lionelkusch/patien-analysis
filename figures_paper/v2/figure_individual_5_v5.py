@@ -22,16 +22,16 @@ def to_percent(n=10):
         s = str(np.array(100 * y / n, dtype=int))
         # The percent symbol needs escaping in latex
         if matplotlib.rcParams['text.usetex'] is True:
-            return s + r'$\%$'
+            return s
         else:
-            return s + '%'
+            return s
     return function
 
 
 np.random.seed(42)
-titlefont_size = 12.0
+titlefont_size = 10.0
 tickfont_size = 8.0
-labelfont_size = 10.0
+labelfont_size = 9.0
 letter_font_size = 12
 range_time = (900, 1400)
 regions_select = (0, 90)
@@ -42,7 +42,8 @@ avalanches_patterns_all = Avalanches_human[0][904:910, :]
 cmap_black_white = ListedColormap(["white", "black", "white"], name='from_list', N=None)
 cmap_blue_white = ListedColormap(["white", "deepskyblue", "deepskyblue"], name='from_list', N=None)
 cmap_red_white = ListedColormap(["white", "salmon", "salmon"], name='from_list', N=None)
-cmap_red_magenta = ListedColormap(["white", "salmon", "magenta", "magenta"], name='from_list', N=None)
+cmap_red_magenta = ListedColormap(["white", "salmon", "magenta", "magenta"], name='from_list', N=3)
+cmap_bleu_green = ListedColormap(["blueviolet", "lightblue", "cyan", "cyan"], name='from_list', N=3)
 cmap_red_blue = get_color_map()
 
 # entropy
@@ -100,22 +101,17 @@ gs_null_1 = GridSpec(3, 3, figure=fig)
 ################################### null model 1 ###########################
 # figure null model 1
 ax = fig.add_subplot(gs_null_1[0, 0])
-ax.set_title('Null model 1\nShuffle cluster label', {"fontsize": titlefont_size}, pad=16)
+ax.set_title("Null model 1\n$\\bf{shuffle}$\n$\\bf{cluster\ label}$", {"fontsize": titlefont_size}, pad=2)
 ax.set_axis_off()
 
 gs_shuffle = GridSpec(4, 6, figure=fig, height_ratios=[0.9, 0.1, 1., 1.], hspace=0.05, wspace=0.25)
-# avalanches_patterns_1 = Avalanches_human[0][105:112, :11]
-# avalanches_patterns_1[1, 3] = 1
-# avalanches_patterns_1[2, 3] = 1
-# avalanches_patterns_1[4, 8] = 1
-# avalanches_patterns_1[5, 9] = 1
 avalanches_patterns_1 = np.load('avalanches_example.npy')
 range_region_label = np.arange(0, avalanches_patterns_1.shape[0], 1)
 phate_operator = phate.PHATE(n_components=2, n_jobs=8, n_pca=None, decay=1.2, gamma=-1, knn=1, knn_dist='cosine', mds_dist='cosine')
 Y_phate_example = phate_operator.fit_transform(avalanches_patterns_1)
 cluster_phate = KMeans(n_clusters=3, random_state=12).fit_predict(Y_phate_example)
 # avalanches
-ax = fig.add_subplot(gs_shuffle[0, 0])
+ax = fig.add_subplot(gs_shuffle[0, :2])
 ax.imshow(avalanches_patterns_1.T, vmin=0.0, vmax=2.0, cmap=cmap_black_white, origin='lower')
 ax.set_xticks(np.arange(0.5, len(cluster_phate)))
 ax.set_xticklabels([])
@@ -125,53 +121,34 @@ ax.set_ylim(ymax=len(range_region_label)-0.5, ymin=-0.5)
 ax.set_ylabel('ROIs', {"fontsize": labelfont_size})
 ax.tick_params(which='both', labelsize=tickfont_size)
 # label
-ax = fig.add_subplot(gs_shuffle[1, 0])
 cluster_phate_1 = [0, 1, 0, 1, 1, 0, 2, 2, 1]
 # cluster_phate_1 = cluster_phate
 data = np.expand_dims(cluster_phate_1, 1).T
-ax.imshow(data, cmap=cmap_red_white)
-for (j, i), label in np.ndenumerate(data):
-    plt.text(i, j+0.2, np.around(label, 2), ha='center', va='center', fontsize=tickfont_size)
-ax.set_yticks([])
-ax.set_xticks(np.arange(0, len(cluster_phate_1))+0.5)
-ax.set_xticklabels([])
-ax.grid(axis='x')
-ax.set_ylabel('# cluster')
-
-ax = fig.add_subplot(gs_shuffle[0, 1])
-ax.imshow(avalanches_patterns_1.T, vmin=0.0, vmax=2.0, cmap=cmap_black_white, origin='lower')
-ax.set_xticks(np.arange(0.5, len(cluster_phate)))
-ax.set_xticklabels([])
-ax.grid(axis='x')
-ax.set_yticks([])
-ax.set_ylim(ymax=len(range_region_label)-0.5, ymin=-0.5)
-ax.tick_params(which='both', labelsize=tickfont_size)
 # plot label
-ax = fig.add_subplot(gs_shuffle[1, 1])
-np.random.shuffle(data[0])
-np.random.shuffle(data[0])
-ax.imshow(data, cmap=cmap_red_magenta)
+ax = fig.add_subplot(gs_shuffle[1, :2])
+ax.imshow(data, cmap=cmap_red_magenta, vmin=0, vmax=2)
 for (j, i), label in np.ndenumerate(data):
     plt.text(i, j+0.2, np.around(label, 2), ha='center', va='center', fontsize=tickfont_size)
 ax.set_yticks([])
 ax.set_xticks(np.arange(0, len(cluster_phate_1))+0.5)
 ax.set_xticklabels([])
-ax.set_xlabel('# avalanche pattern                    ', {"fontsize": labelfont_size}, labelpad=0)
+ax.set_xlabel('# avalanche pattern', {"fontsize": labelfont_size}, labelpad=0)
+ax.set_ylabel('# cluster', {"fontsize": labelfont_size}, rotation=0, loc='bottom', labelpad=45)
 ax.grid(axis='x')
 
 # matrix significant
-gs_significant = GridSpec(4, 4, figure=fig, height_ratios=[1.0, 0.3, 0.7, 1.],
-                          width_ratios=[0.25, 2.25, 0.2, 0.6])
+gs_significant = GridSpec(4, 4, figure=fig, height_ratios=[1.0, 0.1, 0.9, 1.],
+                          width_ratios=[0.50, 2.0, 0.2, 0.6])
 ax = fig.add_subplot(gs_significant[2, 0])
 ax.imshow((pvalue_cluster_all[:, 2, :, :20].swapaxes(0, 1)[0]-pvalue_cluster_all[:, 3, :, :20].swapaxes(0, 1)[0]).T,
-           vmin=-1.0, vmax=1.0, cmap=cmap_red_blue, origin='lower')
+           aspect='equal', vmin=-1.0, vmax=1.0, cmap=cmap_red_blue, origin='lower')
 ax.tick_params('both', pad=1)
 ax.set_xticks([0, 3, 6])
 ax.set_xticklabels([1, 4, 7])
 ax.set_xlabel('# cluster  ', {"fontsize": labelfont_size})
 ax.set_ylabel('ROIs', {"fontsize": labelfont_size}, labelpad=0)
 ax.set_yticks([])
-ax.set_title('                    Significant cluster\n                    affiliation', {"fontsize": titlefont_size}, pad=13)
+ax.set_title('                 Significant cluster affiliation', {"fontsize": titlefont_size}, pad=13)
 ax.tick_params(which='both', labelsize=tickfont_size)
 for i in range(7):
     ax.annotate('...', xy=(i-1., 20.1), fontsize=titlefont_size, annotation_clip=False, rotation=90, va='bottom', ha='center')
@@ -199,13 +176,12 @@ ax.set_xlim(xmin=0, xmax=0.5)
 
 
 # entropy
-gs_entropy = GridSpec(3, 5, figure=fig, width_ratios=[0.2, 0.15, 0.85, 1.9, 1.], wspace=0.0)
+gs_entropy = GridSpec(3, 5, figure=fig, height_ratios=[1, 1, 0.8], width_ratios=[0.2, 0.15, 0.75, 1.9, 1.], wspace=0.05)
 d = .015  # how big to make the diagonal lines in axes coordinates
 ax = fig.add_subplot(gs_entropy[2, 2])
 y, x, _ = ax.hist(entropy_values_all, bins=10, histtype='step', color='black')
 ax.set_ylim(ymax=0.3*nb_randomize_1+500)
 ax.tick_params('both', pad=1)
-ax.set_xlabel('entropy', {"fontsize": labelfont_size})
 ax.spines['left'].set_visible(False)
 ax.set_yticks([])
 # arguments to pass plot, just so we don't keep repeating them
@@ -218,7 +194,7 @@ ax = fig.add_subplot(gs_entropy[2, 1])
 arr_1 = mpatches.FancyArrowPatch((entropy(data_patient.ravel(), base=None), 700.),
                                  (entropy(data_patient.ravel(), base=None), -100),
                                  color='r',
-                                 arrowstyle='->,head_width=.15', mutation_scale=20)
+                                 arrowstyle='->,head_width=.2', mutation_scale=20)
 arr_1.set_clip_on(False)
 ax.add_patch(arr_1)
 ax.annotate('data', (1.5, 1.0), xycoords=arr_1, ha='center', va='bottom', annotation_clip=False, color='red')
@@ -229,10 +205,12 @@ ax.spines['right'].set_visible(False)
 ax.set_ylabel('% of distribution', {"fontsize": labelfont_size}, labelpad=0)
 ax.set_xlim(xmax=(entropy(data_patient.ravel(), base=None)+0.005), xmin=(entropy(data_patient.ravel(), base=None)-0.005))
 ax.set_xticks([np.around(entropy(data_patient.ravel(), base=None), decimals=2)])
-ax.tick_params('x', pad=10)
+ax.tick_params('x', pad=0.8)
 kwargs.update(transform=ax.transAxes)  # switch to the bottom axes
 ax.plot((0.95-d, 1.05+d), (-d, +d), **kwargs)
 ax.plot((0.95-d, 1.05+d), (1-d, 1+d), **kwargs)
+ax.set_title('                            Estimation distribution', {"fontsize": titlefont_size})
+ax.set_xlabel('                          entropy (nats)', {"fontsize": labelfont_size})
 plt.subplots_adjust(wspace=0.02)
 ax.tick_params('both', labelsize=tickfont_size)
 
@@ -240,18 +218,10 @@ ax.tick_params('both', labelsize=tickfont_size)
 ################################### null model 3 ###########################
 # example 1
 ax = fig.add_subplot(gs_null_1[0, 2])
-ax.set_title('Null model 3\nShuffle active region\nby avalanche pattern', {"fontsize": titlefont_size}, pad=2, y=1)
+ax.set_title('Null model 3\n$\\bf{shuffle\ active\ region\ by}$\n$\\bf{avalanche\ pattern}$', {"fontsize": titlefont_size}, pad=2, y=1)
 ax.set_axis_off()
-ax = fig.add_subplot(gs_shuffle[0, 4])
-ax.imshow(avalanches_patterns_1.T, vmin=0.0, vmax=2.0, cmap=cmap_black_white, origin='lower')
-ax.set_xticks(np.arange(0.5, len(cluster_phate)))
-ax.set_xticklabels([])
-ax.grid(axis='x')
-ax.set_yticks([])
-ax.set_ylim(ymax=len(range_region_label)-0.5, ymin=-0.5)
-ax.tick_params(which='both', labelsize=tickfont_size)
 # plot shuffles
-ax = fig.add_subplot(gs_shuffle[0, 5])
+ax = fig.add_subplot(gs_shuffle[0, 4:])
 avalanches_patterns_shuffle = []
 for av in avalanches_patterns_1:
     av_copy = np.copy(av)
@@ -266,26 +236,16 @@ ax.set_ylim(ymax=len(range_region_label)-0.5, ymin=-0.5)
 ax.tick_params(which='both', labelsize=tickfont_size)
 
 # plot label
-ax = fig.add_subplot(gs_shuffle[1, 4])
-# cluster_phate_1 = [0, 1, 1, 0, 1, 1, 0]
-cluster_phate_1 = cluster_phate
-data = np.expand_dims(cluster_phate_1, 1).T
-ax.imshow(data, cmap=cmap_red_white)
+ax = fig.add_subplot(gs_shuffle[1, 4:])
+data =np.expand_dims([1, 0, 1, 2, 0, 2, 1, 0, 1], 1).T
+ax.imshow(data, cmap=cmap_bleu_green, vmin=0, vmax=2)
 for (j, i), label in np.ndenumerate(data):
     plt.text(i, j+0.2, np.around(label, 2), ha='center', va='center', fontsize=tickfont_size)
 ax.set_yticks([])
 ax.set_xticks(np.arange(0, len(cluster_phate_1))+0.5)
 ax.set_xticklabels([])
-ax.grid(axis='x')
-ax = fig.add_subplot(gs_shuffle[1, 5])
-np.random.shuffle(data[0])
-ax.imshow(data, cmap=cmap_blue_white)
-for (j, i), label in np.ndenumerate(data):
-    plt.text(i, j+0.2, np.around(label, 2), ha='center', va='center', fontsize=tickfont_size)
-ax.set_yticks([])
-ax.set_xticks(np.arange(0, len(cluster_phate_1))+0.5)
-ax.set_xticklabels([])
-ax.set_xlabel('# avalanche pattern                    ', {"fontsize": labelfont_size}, labelpad=0)
+ax.set_xlabel('# avalanche pattern', {"fontsize": labelfont_size}, labelpad=0)
+ax.set_ylabel('# cluster', {"fontsize": labelfont_size}, rotation=0, loc='bottom', labelpad=45)
 ax.grid(axis='x')
 
 # matrix significant
@@ -298,7 +258,7 @@ ax.set_xticklabels([1, 4, 7])
 ax.set_xlabel('# cluster  ', {"fontsize": labelfont_size})
 ax.set_ylabel('ROIs', {"fontsize": labelfont_size}, labelpad=0)
 ax.set_yticks([])
-ax.set_title('                    Significant cluster\n                    affiliation', {"fontsize": titlefont_size}, pad=13)
+ax.set_title('                    Significant cluster affiliation', {"fontsize": titlefont_size}, pad=13)
 ax.tick_params(which='both', labelsize=tickfont_size)
 for i in range(7):
     ax.annotate('...', xy=(i-1., 20.1), fontsize=titlefont_size, annotation_clip=False, rotation=90, va='bottom', ha='center')
@@ -325,39 +285,31 @@ ax.set_xticks([])
 ax.set_xlim(xmin=0, xmax=0.5)
 
 # entropy
-gs_entropy_1 = GridSpec(3, 3, figure=fig, width_ratios=[1., 1., 0.6])
+gs_entropy_1 = GridSpec(3, 3, figure=fig, width_ratios=[1., 1., 0.6], height_ratios=[1., 1.15, 0.85])
 ax = fig.add_subplot(gs_entropy_1[2, 2])
 y, x, _ = ax.hist(entropy_values_null_model, bins=10, histtype='step', color='black')
 ax.set_ylim(ymax=0.3*nb_randomize_2+5)
-arr_1 = mpatches.FancyArrowPatch((entropy(data_patient.ravel(), base=None), 5.7),
+arr_1 = mpatches.FancyArrowPatch((entropy(data_patient.ravel(), base=None), 8.),
                                  (entropy(data_patient.ravel(), base=None), 0.0),
                                  color='r',
-                                 arrowstyle='->,head_width=.15', mutation_scale=20)
+                                 arrowstyle='->,head_width=.2', mutation_scale=20)
 arr_1.set_clip_on(False)
 ax.add_patch(arr_1)
 ax.annotate('data', (0.5, 1.), xycoords=arr_1, ha='center', va='bottom', annotation_clip=False, color='red')
 ax.yaxis.set_major_formatter(FuncFormatter(to_percent(n=nb_randomize_2)))
 ax.set_xlim(xmax=(entropy(data_patient.ravel(), base=None)+0.1))
-ax.tick_params('both', pad=1)
 ax.set_ylabel('% of distribution', {"fontsize": labelfont_size}, labelpad=0)
-ax.set_xlabel('entropy', {"fontsize": labelfont_size})
+ax.set_xlabel('entropy (nats)', {"fontsize": labelfont_size})
 ax.tick_params(which='both', labelsize=tickfont_size)
+ax.set_title('Estimation distribution', {"fontsize": titlefont_size})
 
 
 ############################### null model 2 ########################
 ax = fig.add_subplot(gs_null_1[0, 1])
-ax.set_title('Null model 2\nShuffle avalanche\npattern order', {"fontsize": titlefont_size}, pad=2, y=1)
+ax.set_title('Null model 2\n$\\bf{shuffle\ avalanche}$\n$\\bf{pattern\ order}$', {"fontsize": titlefont_size}, pad=2, y=1)
 ax.set_axis_off()
 
-ax = fig.add_subplot(gs_shuffle[0, 2])
-ax.imshow(avalanches_patterns_1.T, vmin=0.0, vmax=2.0, cmap=cmap_black_white, origin='lower')
-ax.set_xticks(np.arange(0.5, len(cluster_phate)))
-ax.set_xticklabels([])
-ax.grid(axis='x')
-ax.set_yticks([])
-ax.set_ylim(ymax=len(range_region_label)-0.5, ymin=-0.5)
-ax.tick_params(which='both', labelsize=tickfont_size)
-ax = fig.add_subplot(gs_shuffle[0, 3])
+ax = fig.add_subplot(gs_shuffle[0, 2:4])
 avalanches_patterns_copy = np.copy(avalanches_patterns_1)
 indexes = np.arange(0, len(avalanches_patterns_1), 1)
 np.random.shuffle(indexes)
@@ -371,71 +323,59 @@ ax.set_ylim(ymax=len(range_region_label)-0.5, ymin=-0.5)
 ax.tick_params(which='both', labelsize=tickfont_size)
 
 # plot label
-ax = fig.add_subplot(gs_shuffle[1, 2])
-# cluster_phate_1 = [0, 1, 1, 0, 1, 1, 0]
-cluster_phate_1 = cluster_phate
-data = np.expand_dims(cluster_phate_1, 1).T
-ax.imshow(data, cmap=cmap_red_white)
-for (j, i), label in np.ndenumerate(data):
-    plt.text(i, j+0.2, np.around(label, 2), ha='center', va='center', fontsize=tickfont_size)
-ax.set_yticks([])
-ax.set_xticks(np.arange(0, len(cluster_phate_1))+0.5)
-ax.set_xticklabels([])
-# ax.set_xlabel('# avalanche pattern', {"fontsize": label_size})
-ax.grid(axis='x')
-ax = fig.add_subplot(gs_shuffle[1, 3])
-ax.imshow([data[0][indexes]], cmap=cmap_red_white, vmin=0, vmax=1)
+ax = fig.add_subplot(gs_shuffle[1, 2:4])
+ax.imshow([data[0][indexes]], cmap=cmap_red_magenta, vmin=0, vmax=2)
 for (j, i), label in np.ndenumerate([data[0][indexes]]):
     plt.text(i, j+0.2, np.around(label, 2), ha='center', va='center', fontsize=tickfont_size)
 ax.set_yticks([])
 ax.set_xticks(np.arange(0, len(cluster_phate_1))+0.5)
 ax.set_xticklabels([])
-ax.set_xlabel('# avalanche pattern                    ', {"fontsize": labelfont_size}, labelpad=0)
+ax.set_xlabel('# avalanche pattern', {"fontsize": labelfont_size}, labelpad=0)
+ax.set_ylabel('# cluster', {"fontsize": labelfont_size}, rotation=0, loc='bottom', labelpad=45)
 ax.grid(axis='x')
 
 # transitions
-gs_shuffle_2 = GridSpec(4, 6, figure=fig, height_ratios=[0.9, 0.1, 1., 1.],
-                        width_ratios=[1.3, 1.3, 0.45, 1.2, 1.2, 1.2])
+gs_shuffle_2 = GridSpec(4, 6, figure=fig, height_ratios=[0.6, 0.1, 1.9, 1.],
+                        width_ratios=[1.3, 1.3, 0.7, 1.2, 1.2, 1.2])
 ax = fig.add_subplot(gs_shuffle_2[2, 2])
 transitions = np.load(path + "/transition_all.npy")
-im_transition = ax.imshow(transitions, vmin=0.0, vmax=0.35)
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-colorbar_transition = fig.colorbar(im_transition, cax=cax)
-colorbar_transition.ax.yaxis.set_tick_params(pad=0.1, labelsize=tickfont_size)
-colorbar_transition.ax.set_ylabel('% of transition', {"fontsize": labelfont_size}, labelpad=2)
+im_transition = ax.imshow(transitions*100, vmin=0, vmax=35, aspect='equal')
 ax.set_xticks([0.1, 3.1, 6.1])
 ax.set_xticklabels([1, 4, 7])
 ax.set_yticks([0.1, 3.1, 6.1])
 ax.set_yticklabels([1, 4, 7])
-ax.set_title('   Observed\nCTM', {"fontsize": titlefont_size}, pad=16)
+ax.set_title('Observed CTM', {"fontsize": titlefont_size}, pad=10)
 ax.set_ylabel('# cluster', {"fontsize": labelfont_size}, labelpad=0)
 ax.set_xlabel('# cluster', {"fontsize": labelfont_size}, labelpad=0)
 ax.tick_params(which='both', labelsize=tickfont_size)
+cax = fig.add_axes([0.4, 0.31, 0.10, 0.01])
+colorbar_transition = fig.colorbar(im_transition, cax=cax, orientation='horizontal')
+colorbar_transition.ax.xaxis.set_tick_params(labelsize=tickfont_size)
+colorbar_transition.ax.set_xlabel('% of transitions', {"fontsize": labelfont_size}, labelpad=2)
+colorbar_transition.ax.xaxis.set_ticks_position('top')
+colorbar_transition.set_ticks([0, 35])
+colorbar_transition.set_ticklabels([0, 35])
+colorbar_transition.ax.tick_params(axis='x', pad=0)
 
-nb = 5
+nb = 3
 for i in range(nb):
-    gs_null_3 = GridSpec(7, 4, figure=fig, height_ratios=[i*0.1, 4.7, 1., 1., 1., 4.3, 1-i*1.],
-                         width_ratios=[0.5-i*0.02, 0.1, 1.65, i*0.02])
+    gs_null_3 = GridSpec(7, 4, figure=fig, height_ratios=[i*0.8, 3., 1., 1.5, 1., 2., 1-i*0.8],
+                         width_ratios=[0.5-i*0.1, 0.4, 3., i*0.1])
     ax = fig.add_subplot(gs_null_3[3, 2])
     transitions = np.load(path + "/transition_all"+str(i)+".npy")
-    im_transition = ax.imshow(transitions, vmin=0.0, vmax=0.35)
+    im_transition = ax.imshow(transitions, vmin=0.0, vmax=0.35, aspect='equal')
     if i == nb-1:
         ax.set_xticks([0.1, 3.1, 6.1])
         ax.set_xticklabels([1, 4, 7])
-        ax.set_yticks([0.1, 3.1, 6.1])
-        ax.set_yticklabels([1, 4, 7])
+        ax.set_yticks([])
+        ax.set_yticklabels([])
         ax.set_ylabel('# cluster', {"fontsize": labelfont_size}, labelpad=0)
         ax.set_xlabel('# cluster', {"fontsize": labelfont_size}, labelpad=0)
         ax.tick_params(which='both', labelsize=tickfont_size)
     elif i == 0:
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        colorbar_transition = fig.colorbar(im_transition, cax=cax)
-        colorbar_transition.ax.yaxis.set_tick_params(pad=0.1, labelsize=tickfont_size)
         ax.set_xticks([])
         ax.set_yticks([])
-        ax.set_title('Null CTM    ', {"fontsize": titlefont_size}, pad=12)
+        ax.set_title('Null CTM    ', {"fontsize": titlefont_size}, pad=9)
     else:
         # ax.set_axis_off()
         ax.set_xticks([])
@@ -455,7 +395,7 @@ pvalue_all = np.sum(np.array(data_null_model_all['transition']) > data_patient_a
 significatif_high_all = pvalue_all > 1.0 - significatif
 significatif_low_all = pvalue_all < significatif
 significatif_all_all = np.logical_or(significatif_low_all, significatif_high_all)
-ax = fig.add_subplot(gs_shuffle_2[3, 2])
+ax = fig.add_subplot(gs_shuffle_2[3, 2:4])
 im_2 = ax.imshow(pvalue_all, vmin=significatif, vmax=1 - significatif, cmap=cmap_red_blue)
 ax.set_xticks([0.1, 3.1, 6.1])
 ax.set_xticklabels([1, 4, 7])
@@ -464,24 +404,9 @@ ax.set_yticklabels([1, 4, 7])
 ax.set_ylabel('# cluster', {"fontsize": labelfont_size}, labelpad=0)
 ax.set_xlabel('# cluster    ', {"fontsize": labelfont_size})
 ax.tick_params(which='both', labelsize=tickfont_size)
-ax.set_title('Significant    \nCTM', {"fontsize": titlefont_size}, pad=0)
+ax.set_title('Significant CTM', {"fontsize": titlefont_size}, pad=9)
 gs_shuffle_3 = GridSpec(4, 6, figure=fig, height_ratios=[0.9, 0.1, 1.25, 0.75],
                         width_ratios=[1., 1., 1.25, 0.75, 1., 1.])
-ax = fig.add_subplot(gs_shuffle_3[3, 3])
-max_nb_cluster = 15
-per_diag = [pvalue['data_per_diagonal_all'] for pvalue in pvalues_prob_transisiton ]
-per_diag_rand = np.array([pvalue['shuffle_per_diagonal_all'] for pvalue in pvalues_prob_transisiton ])
-ax.plot(range(2, max_nb_cluster), per_diag, 'b', label='data')
-ax.plot(range(2, max_nb_cluster), per_diag_rand.mean(axis=1), 'g', label='null model')
-ax.fill_between(range(2, max_nb_cluster),
-                per_diag_rand.mean(axis=1) + per_diag_rand.std(axis=1),
-                per_diag_rand.mean(axis=1) - per_diag_rand.std(axis=1), 'g', alpha=0.5)
-ax.set_ylabel('significant transition', {"fontsize": labelfont_size}, labelpad=-2)
-ax.set_ylim(ymin=0.20)
-ax.set_xlabel('nb clusters', {"fontsize": labelfont_size}, labelpad=0)
-ax.legend(fontsize=tickfont_size, handlelength=0.5, borderpad=0.2, labelspacing=0.1, loc='lower center')
-ax.tick_params(which='both', labelsize=tickfont_size, pad=0)
-ax.set_title('Significant\ndiagonal', {"fontsize": titlefont_size}, pad=0)
 
 
 plt.annotate('A', (0., 0.975), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
@@ -490,18 +415,19 @@ plt.annotate('C', (0., 0.25), xycoords='figure fraction', fontsize=titlefont_siz
 
 plt.annotate('D', (0.35, 0.975), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
 plt.annotate('E', (0.35, 0.545), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
-plt.annotate('F', (0.35, 0.25), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
-plt.annotate('G', (0.53, 0.545), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
-plt.annotate('H', (0.53, 0.25), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
+plt.annotate('G', (0.43, 0.25), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
+plt.annotate('F', (0.53, 0.545), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
 
 
-plt.annotate('J', (0.69, 0.975), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
-plt.annotate('K', (0.69, 0.545), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
-plt.annotate('L', (0.69, 0.25), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
+plt.annotate('H', (0.69, 0.975), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
+plt.annotate('I', (0.69, 0.545), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
+plt.annotate('J', (0.69, 0.25), xycoords='figure fraction', fontsize=titlefont_size, weight='bold')
 
 plt.subplots_adjust(left=0.05, right=0.99, bottom=0.07, top=0.89, hspace=0.6)
 
-plt.savefig('figure/figure_5_pre_v4_2.png')
-plt.savefig('figure/figure_5_pre_v4_2.svg')
+plt.savefig('figure_3/figure_5_pre.png')
+plt.savefig('figure_3/figure_5_pre.svg')
+plt.savefig('figure_3/figure_5_pre.eps')
+plt.savefig('figure_3/figure_5_pre.tiff', dpi=800)
 plt.show()
 

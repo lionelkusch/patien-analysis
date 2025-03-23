@@ -421,7 +421,7 @@ ax.set_xlim(xmin=0, xmax=0.5)
 plt.subplots_adjust(left=0.095, right=0.97, bottom=0.07, top=0.95, wspace=0.7)
 # plt.subplots_adjust(left=0.062, right=0.965, bottom=0.07, top=0.94, wspace=0.35)
 
-plt.savefig('figure/figure_5_pre.png')
-plt.savefig('figure/figure_5_pre.svg')
+plt.savefig('figure_3/figure_5_pre.png')
+plt.savefig('figure_3/figure_5_pre.svg')
 plt.show()
 

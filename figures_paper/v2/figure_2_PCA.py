@@ -74,7 +74,7 @@ letter = ['A', 'B', 'C', 'D', 'E']
 fig = plt.figure(figsize=(6.8, 3.4))
 gs_1 = GridSpec(2, 8, figure=fig, width_ratios=[1., 1., 0.1, 1., 1., 0.1, 1., 1.])
 for index_data, (PCA_fit, data_subject, index_ax, title, x_position_title) in enumerate([
-    (PCA_fit_data_zscore, data_zscore, 1, 'Normalized data', 0.04),
+    (PCA_fit_data_zscore, data_zscore, 1, 'Normalised data', 0.04),
     (PCA_fit_data_avalanche, data_avalanches, 3, 'Avalanches', 0.45),
     (PCA_fit_data_avalanche_pattern, data_avalanches_bin, 5, 'Avalanche patterns', 0.7)]):
     ax1 = fig.add_subplot(gs_1[0, index_data*3])
@@ -89,13 +89,13 @@ for index_data, (PCA_fit, data_subject, index_ax, title, x_position_title) in en
     ax1.annotate(title, xy=(x_position_title, 0.95), xycoords='figure fraction', fontsize=label_size, weight='bold')
     ax1.annotate(letter[index_data], xy=(-0.27, 1.1), xycoords='axes fraction', weight='bold', fontsize=label_size)
     ax1.set_title('pooled data')
-    for nb_ax_x, nb_ax_y, nb_patient in [(1, 0, 0), (0, 1, 1), (1, 1, 2)]:
+    for nb_ax_x, nb_ax_y, nb_patient in [(1, 0, 0), (0, 1, 7), (1, 1, 2)]:
         ax = fig.add_subplot(gs_1[nb_ax_y, index_data*3+nb_ax_x])
         scatter_plot = ax.scatter(PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 0],
                PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 1],
                c=np.arange(patient_time[nb_patient][1]-patient_time[nb_patient][0]), s=0.8)
         ax.axis('off')
-        if nb_patient == 1:
+        if nb_patient == 7:
             add_arrows(PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 0],
                        PCA_fit[patient_time[nb_patient][0]:patient_time[nb_patient][1], 1],
                        ax, "PCA1", "PCA2")
@@ -105,11 +105,13 @@ ax = fig.add_axes([0.25, 0.08, 0.5, 0.02])
 colbar_time = fig.colorbar(scatter_plot, cax=ax, orientation='horizontal')
 colbar_time.ax.yaxis.tick_left()
 colbar_time.set_ticks([0, patient_time[2][1]-patient_time[2][0] - 1])
-colbar_time.set_ticklabels(['t=0', 't=end'])
+colbar_time.set_ticklabels(['t = 0', r't$\approx$6 min'])
 colbar_time.ax.xaxis.set_tick_params(pad=0.1, labelsize=tickfont_size)
 colbar_time.ax.set_xlabel('time evolution', {"fontsize": label_size}, labelpad=-7)
 
 plt.subplots_adjust(left=0.035, top=0.85, bottom=0.18, right=0.99, hspace=0.25)
-plt.savefig('figure/figure_2_pre.png')
-plt.savefig('figure/figure_2_pre.svg')
+plt.savefig('figure_3/figure_2_pre.png')
+plt.savefig('figure_3/figure_2_pre.svg')
+plt.savefig('figure_3/figure_2_pre.eps')
+plt.savefig('figure_3/figure_2_pre.tiff', dpi=800)
 plt.show()

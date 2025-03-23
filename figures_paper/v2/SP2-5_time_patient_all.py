@@ -87,7 +87,7 @@ for index_PCA, (name, PCA_fit, data_subject) in enumerate([
         begin = end
     ax1.axis('off')
     ax1.annotate(letter[0], xy=(-0.1, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
-    ax1.set_title('pooled data')
+    ax1.set_title('all subjects')
     add_arrows(PCA_fit[:, 0], PCA_fit[:, 1], ax1, "PCA1", "PCA2")
     for nb_patient in range(len(data_subjects)):
         ax = plt.subplot(4, 5, nb_patient+2)
@@ -100,12 +100,12 @@ for index_PCA, (name, PCA_fit, data_subject) in enumerate([
     ax = fig.add_axes([0.25, 0.03, 0.5, 0.02])
     colbar_time = fig.colorbar(cm.ScalarMappable(norm=Normalize(vmin=0., vmax=1.)), cax=ax, orientation='horizontal')
     colbar_time.ax.yaxis.tick_left()
-    colbar_time.set_ticks([0, patient_time[2][1]-patient_time[2][0] - 1])
-    colbar_time.set_ticklabels(['t=0', 't=end'])
+    colbar_time.set_ticks([0, 1])
+    colbar_time.set_ticklabels(['t = 0', r't$\approx$6 min'])
     colbar_time.ax.xaxis.set_tick_params(pad=0.1, labelsize=tickfont_size)
     colbar_time.ax.set_xlabel('time evolution', {"fontsize": label_size}, labelpad=-7)
 
     plt.subplots_adjust(left=0.04, right=0.97, top=0.97, bottom=0.06, wspace=0.6, hspace=0.6)
-    plt.savefig('figure/SP_'+str(2+index_PCA)+'_'+name+'.png')
-    # plt.show()
+    plt.savefig('figure_3/SP_'+str(8+index_PCA)+'_'+name+'.png', dpi=600)
+    plt.show()
 

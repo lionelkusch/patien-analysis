@@ -34,7 +34,7 @@ significatif_high = pvalue > 1.0 - significatif
 significatif_low = pvalue < significatif
 significatif_all = np.logical_or(significatif_low, significatif_high)
 
-transistion_matrix = np.array(data_patient['transition'])
+transistion_matrix = np.array(data_patient['transition'])*100
 transistion_matrix[np.logical_not(significatif_all)] = np.NAN
 std_significant_transition = np.nanstd(transistion_matrix, axis=0)
 mean_significant_transition = np.nanmean(transistion_matrix, axis=0)
@@ -50,16 +50,17 @@ all_significatif_low = all_pvalue < significatif
 all_significatif_all = np.logical_or(all_significatif_low, all_significatif_high)
 
 fig = plt.figure(figsize=(15, 5))
-for index, (title, data) in enumerate([('mean', mean_significant_transition),
-                                       ('std', std_significant_transition),
-                                       ('coefficient of variation', std_significant_transition / mean_significant_transition),
+for index, (title, unit, data) in enumerate([('mean', '% of transitions', mean_significant_transition),
+                                       ('std', '% of transitions', std_significant_transition),
+                                       ('coefficient of variation', '%', std_significant_transition / mean_significant_transition*100),
                                        ]):
     ax = plt.subplot(131 + index)
     ax.set_title(title, {"fontsize": label_size})
     im = ax.imshow(data)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
-    fig.colorbar(im, cax=cax)
+    colbar = fig.colorbar(im, cax=cax)
+    colbar.ax.set_ylabel(unit, {"fontsize": label_size})
     for (j, i), label in np.ndenumerate(data):
         ax.text(i, j, np.around(label, 2), ha='center', va='center')
     ax.set_xlabel('# cluster', {"fontsize": label_size})
@@ -69,8 +70,8 @@ for index, (title, data) in enumerate([('mean', mean_significant_transition),
     ax.set_yticks(np.arange(7))
     ax.set_yticklabels(np.arange(7)+1)
     ax.annotate(letter[index], xy=(-0.1, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
-plt.subplots_adjust(top=1.0, bottom=0.0, left=0.03, right=0.97, wspace=0.21)
-plt.savefig('figure/SP_6_transition_all_variability.png')
+plt.subplots_adjust(top=1.0, bottom=0.0, left=0.03, right=0.955, wspace=0.27)
+plt.savefig('figure_3/SP_14_transition_all_variability.png', dpi=600)
 
 fig = plt.figure(figsize=(10, 8))
 ax1 = plt.subplot(4, 5, 1)
@@ -101,7 +102,7 @@ ax.set_yticklabels(['significant\ntransition', 'no\nsignificant', 'significant\n
 ax.set_xticks([])
 ax.set_xlim(xmin=0, xmax=0.5)
 plt.subplots_adjust(top=1.0, bottom=0.04, left=0.04, right=0.99, wspace=0.23)
-plt.savefig('figure/SP_7_transition_significatif.png')
+plt.savefig('figure_3/SP_6_transition_significatif.png', dpi=600)
 
 
 fig = plt.figure(figsize=(10, 8))
@@ -117,7 +118,7 @@ ax1.set_ylabel('# cluster', {"fontsize": label_size}, labelpad=0)
 ax1.annotate(letter[0], xy=(-0.15, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
 for nb_patient, transition_patient in enumerate(data_patient['transition']):
     ax = plt.subplot(4, 5, nb_patient+2)
-    im = ax.imshow(transition_patient, vmin=0., vmax=0.6)
+    im = ax.imshow(transition_patient*100, vmin=0., vmax=60.)
     ax.set_xlabel('# cluster', {"fontsize": label_size}, labelpad=0)
     ax.set_ylabel('# cluster', {"fontsize": label_size}, labelpad=0)
     # for (j, i), label in np.ndenumerate(transition_patient):
@@ -128,12 +129,11 @@ for nb_patient, transition_patient in enumerate(data_patient['transition']):
     ax.set_yticklabels([])
     ax.grid()
     ax.annotate(letter[nb_patient+1], xy=(-0.15, 0.9), xycoords='axes fraction', weight='bold', fontsize=label_size)
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.05)
+cax = fig.add_axes([0.87, 0.04, 0.01, 0.2])
 colorbar = fig.colorbar(im, cax=cax)
 colorbar.ax.yaxis.set_tick_params(pad=0.1, labelsize=tickfont_size)
-colorbar.ax.set_ylabel('% of transition', {"fontsize": label_size}, labelpad=2)
+colorbar.ax.set_ylabel('% of transitions', {"fontsize": label_size}, labelpad=2)
 plt.subplots_adjust(top=1.0, bottom=0.04, left=0.04, right=0.99, wspace=0.23)
-plt.savefig('figure/SP_8_transition_patient.png')
+plt.savefig('figure_3/SP_5_transition_patient.png', dpi=600)
 
 plt.show()
