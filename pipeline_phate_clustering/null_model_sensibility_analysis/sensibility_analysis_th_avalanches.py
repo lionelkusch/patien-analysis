@@ -22,7 +22,8 @@ path_saving_root = path_data+"/../paper/result/sensibility_analysis/"
 # range of parameters:
 range_PHATE_knn = [4, 5, 2, 3, 6, 7, 10]
 range_PHATE_decay = [0.1, 1.0, 10.0, 100.0]
-for th in np.arange(1.0, 6.0, 0.1):
+th_range = np.arange(1.0, 6.0, 0.1)
+for th in th_range:
     path_saving = path_saving_root + '/PHATE_th_'+str(th)
     if not os.path.exists(path_saving):
         os.mkdir(path_saving)

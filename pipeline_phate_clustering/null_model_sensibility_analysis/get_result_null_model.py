@@ -593,3 +593,7 @@ if __name__ == '__main__':
                               path_saving_patient=path_data+"/paper/result/default/",
                               plot=True,
                               )
+    null_model_cluster_regions_res(path_saving=path_data+"/paper/result/all_subject_melbourne/",
+                                   plot=True, significatif=0.05 / (90 * 7),
+                                   # precision/(number of region * number of cluster)
+                                   save_mat=True, nb_randomize=10000)
