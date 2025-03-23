@@ -581,3 +581,5 @@ if __name__ == '__main__':
                         kmeans_nb_cluster=7, kmeans_seed=123, plot=True, plot_save=True,
                         update_Phate=False, update_transition=False,
                         nb_randomize=100, seed=123)
+    null_model_cluster_regions(path_saving=path_data+"/paper/result/all_subject_melbourne/",
+                           plot_save=True, nb_randomize=10000)

@@ -2,16 +2,17 @@ import numpy as np
 from scipy.stats import entropy
 import scipy.io as io
 
-def get_entropy(path, name, base = None, nb_region=90):
+def get_entropy(path, name, base = None):
     histograms_region = np.load(path + "/histograms_region.npy")
-    min = histograms_region.min(axis=0).reshape(1, nb_region)
-    max = histograms_region.max(axis=0).reshape(1, nb_region)
+    min = histograms_region.min(axis=0).reshape(1, histograms_region.shape[1])
+    max = histograms_region.max(axis=0).reshape(1, histograms_region.shape[1])
     if np.any(min < 0.0):
         cluster_vector = (histograms_region - min) / (max-min)
         print('rectify')
     else:
         cluster_vector = histograms_region / max
     print(name, ': ', entropy(cluster_vector.ravel(), base=base))
+    return entropy(cluster_vector.ravel(), base=base)
 
 
 def get_entropy_pca(path, name, base = None):
@@ -21,6 +22,7 @@ def get_entropy_pca(path, name, base = None):
         print('rectify')
         cluster_vector -= cluster_vector.min(axis=0)
     print(name, ': ', entropy(cluster_vector.ravel(), base=base))
+    return entropy(cluster_vector.ravel(), base=base)
 
 
 if __name__ == '__main__':
